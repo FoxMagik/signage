@@ -1,6 +1,7 @@
 import urllib.request
 import re
 from datetime import datetime, date
+import html
 
 ICS_URL = "https://www.ascensionschools.org/fs/calendar-manager/events.ics?feed_id=c20467f1-be50-44e0-be8b-9ab7b494654c"
 
@@ -13,19 +14,38 @@ def parse_ics_date(val):
 def format_menu_description(raw_desc):
     if not raw_desc:
         return ""
+
+    # Unescape HTML entities (&amp;, &nbsp;, etc.)
+    text = html.unescape(raw_desc)
     
-    # Split by actual newlines or escaped iCal newlines (\n)
-    lines = [line.strip() for line in re.split(r'\\n|\n|\r', raw_desc) if line.strip()]
+    # 1. Convert any HTML breaks or iCal escaped line breaks to a standard delimiter
+    text = re.sub(r'<br\s*/?>|</p>|\\n|\n|\r', '###SPLIT###', text, flags=re.IGNORECASE)
     
+    # 2. Insert delimiter before key prefixes like "Sandwich:" or "Breakfast:"
+    text = re.sub(r'(?i)(sandwich\s*:|breakfast\s*:)', r'###SPLIT###\1', text)
+    
+    # 3. Insert delimiter between CamelCase boundaries where items collided (e.g. CornTossed -> Corn | Tossed)
+    # Checks for lowercase letter followed directly by an uppercase letter
+    text = re.sub(r'([a-z])([A-Z])', r'\1###SPLIT###\2', text)
+
+    # 4. Strip out any remaining HTML tags
+    text = re.sub(r'<[^>]+>', '', text)
+
+    # Split into clean, individual lines
+    raw_lines = text.split('###SPLIT###')
+    lines = [l.strip() for l in raw_lines if l.strip()]
+
     formatted_items = []
     for line in lines:
-        # Highlight Breakfast or Sandwich lines if present
-        if line.lower().startswith("breakfast:") or line.lower().startswith("sandwich:"):
+        lower = line.lower()
+        if lower.startswith("breakfast:") or lower.startswith("sandwich:"):
             parts = line.split(":", 1)
-            formatted_items.append(f'<li><strong>{parts[0]}:</strong>{parts[1]}</li>')
+            formatted_items.append(
+                f'<li class="special-item"><strong>{parts[0].strip()}:</strong> {parts[1].strip()}</li>'
+            )
         else:
             formatted_items.append(f'<li>{line}</li>')
-            
+
     return f'<ul class="menu-items">{"".join(formatted_items)}</ul>'
 
 def fetch_events():
@@ -57,7 +77,6 @@ def fetch_events():
         elif ":" in line:
             parts = line.split(":", 1)
             key = parts[0].split(";")[0].strip()
-            # Keep raw escaped newlines intact here so format_menu_description can split them
             val = parts[1].replace("\\,", ",").strip()
             current[key] = val
 
@@ -83,14 +102,14 @@ def main():
         cards.append(card)
 
     with open("index.html", "r", encoding="utf-8") as f:
-        html = f.read()
+        html_content = f.read()
 
     now_str = datetime.now().strftime("%b %d, %I:%M %p")
-    html = html.replace("BUILD_TIMESTAMP", f"Last updated: {now_str}")
-    html = html.replace("<!-- EVENTS_PLACEHOLDER -->", "\n".join(cards) if cards else "<p>No upcoming events.</p>")
+    html_content = html_content.replace("BUILD_TIMESTAMP", f"Last updated: {now_str}")
+    html_content = html_content.replace("<!-- EVENTS_PLACEHOLDER -->", "\n".join(cards) if cards else "<p>No upcoming events.</p>")
 
     with open("index.html", "w", encoding="utf-8") as f:
-        f.write(html)
+        f.write(html_content)
 
 if __name__ == "__main__":
     main()

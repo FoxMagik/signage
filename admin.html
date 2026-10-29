@@ -204,9 +204,31 @@
 
 <script>
   // CONFIGURATION: Replace with your repository details and token
-  const GITHUB_REPO = "YOUR_USERNAME/YOUR_REPO_NAME"; 
-  const GITHUB_TOKEN = "github_pat_YOUR_TOKEN_HERE";
+  const GITHUB_REPO = "FoxMagik/signage"; 
   const FILE_PATH = "announcements.json";
+
+  // Retrieve token from browser storage or prompt the user
+  function getAuthToken() {
+    let token = localStorage.getItem("signage_gh_token");
+    if (!token) {
+      token = prompt("Please enter your GitHub Signage Access Token (this will be saved in your browser):");
+      if (token && token.trim().startsWith("github_pat_")) {
+        token = token.trim();
+        localStorage.setItem("signage_gh_token", token);
+      } else if (token) {
+        alert("Warning: The entered token did not match the expected fine-grained format (github_pat_...).");
+        localStorage.setItem("signage_gh_token", token.trim());
+      }
+    }
+    return token;
+  }
+
+  // Clear token button utility (optional, for logging out)
+  function clearSavedToken() {
+    localStorage.removeItem("signage_gh_token");
+    alert("Token removed from this browser.");
+    location.reload();
+  }
 
   let currentFileSha = null;
   let cachedData = [];

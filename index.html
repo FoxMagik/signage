@@ -2,7 +2,8 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>District Calendar Signage</title>
+  <meta http-equiv="refresh" content="900"> <!-- Auto reloads page every 15 min -->
+  <title>District Events Signage</title>
   <style>
     :root {
       --bg: #0f172a;
@@ -28,7 +29,7 @@
       justify-content: space-between;
       align-items: center;
     }
-    h1 { font-size: 2.2rem; font-weight: 700; letter-spacing: -0.5px; }
+    h1 { font-size: 2.2rem; font-weight: 700; }
     #timestamp { font-size: 1.1rem; color: var(--muted); }
     #events-container {
       display: grid;
@@ -51,113 +52,13 @@
   </style>
 </head>
 <body>
-
   <header>
-    <h1 id="feed-title">District Upcoming Events</h1>
-    <div id="timestamp">Loading calendar...</div>
+    <h1>District Upcoming Events</h1>
+    <div id="timestamp">BUILD_TIMESTAMP</div>
   </header>
 
   <main id="events-container">
-    <p>Retrieving schedule...</p>
+    <!-- EVENTS_PLACEHOLDER -->
   </main>
-
-  <script>
-    const ICS_URL = 'https://www.ascensionschools.org/fs/calendar-manager/events.ics?feed_id=c20467f1-be50-44e0-be8b-9ab7b494654c';
-    const PROXY_URL = `https://api.allorigins.win/get?url=${encodeURIComponent(ICS_URL)}`;
-    const REFRESH_RATE_MS = 15 * 60 * 1000; // Refreshes every 15 minutes
-
-    // Converts iCal date string (e.g., 20261029T140000Z or 20261029) to JS Date
-    function parseIcsDate(dateStr) {
-      if (!dateStr) return null;
-      const clean = dateStr.replace(/[^0-9T]/g, '');
-      const year = parseInt(clean.substring(0, 4), 10);
-      const month = parseInt(clean.substring(4, 6), 10) - 1;
-      const day = parseInt(clean.substring(6, 8), 10);
-      
-      if (clean.includes('T')) {
-        const hour = parseInt(clean.substring(9, 11), 10);
-        const min = parseInt(clean.substring(11, 13), 10);
-        return new Date(Date.UTC(year, month, day, hour, min));
-      }
-      return new Date(year, month, day);
-    }
-
-    // Unfolds wrapped lines and extracts VEVENT blocks
-    function parseICS(rawData) {
-      const unfolded = rawData.replace(/\r\n[ \t]/g, '').replace(/\n[ \t]/g, '');
-      const lines = unfolded.split(/\r\n|\n|\r/);
-      const events = [];
-      let currentEvent = null;
-
-      for (let line of lines) {
-        if (line.startsWith('BEGIN:VEVENT')) {
-          currentEvent = {};
-        } else if (line.startsWith('END:VEVENT')) {
-          if (currentEvent) events.push(currentEvent);
-          currentEvent = null;
-        } else if (currentEvent) {
-          const sep = line.indexOf(':');
-          if (sep > -1) {
-            let key = line.substring(0, sep).split(';')[0].toUpperCase();
-            let val = line.substring(sep + 1).replace(/\\,/g, ',').replace(/\\n/g, ' ').trim();
-            currentEvent[key] = val;
-          }
-        }
-      }
-      return events;
-    }
-
-    async function loadCalendar() {
-      try {
-        const response = await fetch(PROXY_URL);
-        const data = await response.json();
-        const events = parseICS(data.contents);
-        
-        const now = new Date();
-        now.setHours(0, 0, 0, 0); // Include events happening today
-
-        // Parse dates, filter for future/current events, and sort
-        const processed = events
-          .map(ev => ({
-            title: ev.SUMMARY || 'Untitled Event',
-            date: parseIcsDate(ev.DTSTART),
-            desc: ev.DESCRIPTION || ''
-          }))
-          .filter(ev => ev.date && ev.date >= now)
-          .sort((a, b) => a.date - b.date);
-
-        const container = document.getElementById("events-container");
-        container.innerHTML = "";
-
-        if (processed.length === 0) {
-          container.innerHTML = "<p>No upcoming events scheduled.</p>";
-          return;
-        }
-
-        // Show the top 6 upcoming events
-        processed.slice(0, 6).forEach(ev => {
-          const dateOptions = { weekday: 'short', month: 'short', day: 'numeric' };
-          const formattedDate = ev.date.toLocaleDateString(undefined, dateOptions);
-          
-          const card = document.createElement("div");
-          card.classList.add("event-card");
-          card.innerHTML = `
-            <div class="meta">${formattedDate}</div>
-            <h2>${ev.title}</h2>
-            ${ev.desc ? `<div class="desc">${ev.desc.substring(0, 120)}...</div>` : ''}
-          `;
-          container.appendChild(card);
-        });
-
-        document.getElementById("timestamp").textContent = `Last synced: ${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
-      } catch (err) {
-        console.error("ICS load error:", err);
-        document.getElementById("timestamp").textContent = "Sync failed. Retrying...";
-      }
-    }
-
-    loadCalendar();
-    setInterval(loadCalendar, REFRESH_RATE_MS);
-  </script>
 </body>
 </html>

@@ -134,6 +134,32 @@
     .hero-content h2 { font-size: 2.8rem; line-height: 1.2; }
     .hero-content p { font-size: 1.3rem; color: #cbd5e1; line-height: 1.6; }
 
+    /* Navy Theme */
+    .slide.theme-navy .hero-layout {
+      background: #1e293b;
+      border-left: 10px solid #38bdf8;
+    }
+
+    /* Gold / Birthday Theme */
+    .slide.theme-gold .hero-layout {
+      background: linear-gradient(145deg, #1e1b4b, #311042);
+      border-left: 10px solid #f59e0b;
+    }
+    .slide.theme-gold .hero-tag {
+      background: rgba(245, 158, 11, 0.2);
+      color: #fbbf24;
+    }
+
+    /* Teal Highlight Theme */
+    .slide.theme-teal .hero-layout {
+      background: linear-gradient(145deg, #0f2b38, #064e3b);
+      border-left: 10px solid #2dd4bf;
+    }
+    .slide.theme-teal .hero-tag {
+      background: rgba(45, 212, 191, 0.2);
+      color: #2dd4bf;
+    }
+
     footer {
       height: 5vh;
       background: #070a10;
@@ -154,99 +180,43 @@
   </header>
 
   <main id="slide-viewport">
-    
-        <div class="slide active" data-title="District Lunch & Breakfast" data-duration="25">
-          <div class="grid-container">
-            
-            <div class="card">
-              <div class="meta">Thu, Oct 29</div>
-              <h2>Chicken & Sausage Pastalaya</h2>
-              <ul class="menu-items"><li>Corn</li><li>Tossed Salad</li><li>Fruit Juice</li><li>Whole Wheat Roll</li><li class="special-item"><strong>Sandwich:</strong> Chicken Patty on Bun</li><li class="special-item"><strong>Breakfast:</strong> Sausage Biscuit</li></ul>
-            </div>
-            
-            <div class="card">
-              <div class="meta">Fri, Oct 30</div>
-              <h2>Hamburger on Bun</h2>
-              <ul class="menu-items"><li>Oven Fries</li><li>Green Beans</li><li>Lettuce Salad</li><li>Peaches</li><li class="special-item"><strong>Sandwich:</strong> Spicy Chicken Patty on Bun</li><li class="special-item"><strong>Breakfast:</strong> Buffet</li></ul>
-            </div>
-            
-          </div>
-        </div>
-        
+    <!-- Sample 1: Slate / Navy Theme -->
+<div class="slide active theme-navy" data-title="Tech Department Notice" data-duration="15">
+  <div class="hero-layout">
+    <div class="hero-content">
+      <span class="hero-tag">System Maintenance</span>
+      <h2>Network Maintenance Window</h2>
+      <p>Core switch updates scheduled this Friday starting at 5:00 PM. Access to local file shares and printing may be intermittent.</p>
+    </div>
+  </div>
+</div>
 
-        <div class="slide" data-title="Upcoming District Notices" data-duration="20">
-          <div class="grid-container">
-            
-            <div class="card notice">
-              <div class="meta">Tue, Nov 03</div>
-              <h2>Election Day</h2>
-              <p style="margin-top:0.5rem; color:#e2e8f0; font-size:1.1rem;">School Holiday / District Closed</p>
-            </div>
-            
-            <div class="card notice">
-              <div class="meta">Mon, Nov 23</div>
-              <h2>Thanksgiving Break</h2>
-              <p style="margin-top:0.5rem; color:#e2e8f0; font-size:1.1rem;">School Holiday / District Closed</p>
-            </div>
-            
-            <div class="card notice">
-              <div class="meta">Mon, Dec 21</div>
-              <h2>Christmas/Winter Break</h2>
-              <p style="margin-top:0.5rem; color:#e2e8f0; font-size:1.1rem;">School Holiday / District Closed</p>
-            </div>
-            
-            <div class="card notice">
-              <div class="meta">Mon, Jan 18</div>
-              <h2>Dr. Martin Luther King, Jr. Holiday</h2>
-              <p style="margin-top:0.5rem; color:#e2e8f0; font-size:1.1rem;">School Holiday / District Closed</p>
-            </div>
-            
-            <div class="card notice">
-              <div class="meta">Mon, Feb 08</div>
-              <h2>Mardi Gras Holidays</h2>
-              <p style="margin-top:0.5rem; color:#e2e8f0; font-size:1.1rem;">School Holiday / District Closed</p>
-            </div>
-            
-            <div class="card notice">
-              <div class="meta">Fri, Mar 26</div>
-              <h2>Easter/Spring Break</h2>
-              <p style="margin-top:0.5rem; color:#e2e8f0; font-size:1.1rem;">School Holiday / District Closed</p>
-            </div>
-            
-          </div>
-        </div>
-        
+<!-- Sample 2: Gold / Birthday Theme -->
+<div class="slide theme-gold" data-title="Staff Celebrations" data-duration="15">
+  <div class="hero-layout">
+    <div class="hero-content">
+      <span class="hero-tag">Happy Birthday!</span>
+      <h2>Celebrating Mrs. Robinson!</h2>
+      <p>Wishing a very happy birthday to Mrs. Robinson from the entire 3rd grade team and Duplessis primary staff!</p>
+    </div>
+  </div>
+</div>
 
-        <div class="slide" data-title="Word of the Day" data-duration="18">
-          <div class="hero-layout">
-            <div class="hero-content">
-              <span class="hero-tag">Merriam-Webster</span>
-              <h2 style="font-size: 3.8rem; color: var(--accent);">shindig</h2>
-              <p style="font-size: 1.4rem;">Merriam-Webster's Word of the Day for October 29, 2026 is:
-    
-  
-  
-  
-    shindig &#149; \SHIN-dig\&nbsp; &#149; noun
-    Shindig is an informal word for a big party.
-
-// Our friends are in town this weekend, so we’re hosting a shindig at our place on Saturday night.
-
-See the entry >
-  
-  
-  
-    Examples:
-    “It’s the night before Halloween, a...</p>
-            </div>
-          </div>
-        </div>
-        
+<!-- Sample 3: Teal Highlight Theme -->
+<div class="slide theme-teal" data-title="School Reminders" data-duration="15">
+  <div class="hero-layout">
+    <div class="hero-content">
+      <span class="hero-tag">Campus Reminder</span>
+      <h2>Early Dismissal Friday</h2>
+      <p>Students will be dismissed at 12:30 PM for staff professional development. Extended day programs will operate on adjusted schedules.</p>
+    </div>
+  </div>
+</div>
   </main>
 
   <footer>
     <span id="footer-left">Ascension Public Schools</span>
-    <span id="footer-sync">Sync: Oct 29, 08:08 PM</span>
+    <span id="footer-sync">Sync: Oct 29, 09:02 PM</span>
   </footer>
 
   <script>

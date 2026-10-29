@@ -83,6 +83,16 @@ def fetch_events():
     today = date.today()
     upcoming = [e for e in events if e["date"] >= today]
     upcoming.sort(key=lambda x: x["date"])
+
+    # --- DEBUG PRINT ---
+    print("\n" + "="*50)
+    print("DEBUG: RAW EVENT DESCRIPTIONS FOUND:")
+    for ev in upcoming[:3]:
+        print(f"\n--- Event: {ev['title']} ({ev['date']}) ---")
+        print(f"RAW REPR: {repr(ev['desc'])}")
+    print("="*50 + "\n")
+    # -------------------
+
     return upcoming[:6]
 
 def main():

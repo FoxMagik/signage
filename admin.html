@@ -112,6 +112,22 @@
     }
     .delete-btn:hover { background: var(--danger); color: #fff; }
     .delete-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .text-btn {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      padding: 0.4rem 0.8rem;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.85rem;
+    }
+    .text-btn:hover { color: #fff; border-color: var(--muted); }
   </style>
 </head>
 <body>
@@ -179,7 +195,10 @@
   <div class="panel">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
       <h2 style="margin-bottom: 0;">Currently Scheduled Items</h2>
-      <button onclick="loadCurrentAnnouncements()" style="background:transparent; border:1px solid var(--border); color:var(--muted); padding:0.4rem 0.8rem; border-radius:4px; cursor:pointer;">Refresh List</button>
+      <div class="header-actions">
+        <button class="text-btn" onclick="clearSavedToken()">Reset Token</button>
+        <button class="text-btn" onclick="loadCurrentAnnouncements()">Refresh List</button>
+      </div>
     </div>
 
     <div class="table-wrapper">
@@ -194,7 +213,7 @@
           </tr>
         </thead>
         <tbody id="entriesTableBody">
-          <tr><td colspan="5" style="text-align:center; color:var(--muted);">Loading entries from repository...</td></tr>
+          <tr><td colspan="5" style="text-align:center; color:var(--muted);">Checking authorization...</td></tr>
         </tbody>
       </table>
     </div>
@@ -203,36 +222,16 @@
 </div>
 
 <script>
-  // CONFIGURATION: Replace with your repository details and token
+  // =========================================================================
+  // CONFIGURATION: Set only your repository path here (e.g., "username/repo")
+  // =========================================================================
   const GITHUB_REPO = "FoxMagik/signage"; 
   const FILE_PATH = "announcements.json";
-
-  // Retrieve token from browser storage or prompt the user
-  function getAuthToken() {
-    let token = localStorage.getItem("signage_gh_token");
-    if (!token) {
-      token = prompt("Please enter your GitHub Signage Access Token (this will be saved in your browser):");
-      if (token && token.trim().startsWith("github_pat_")) {
-        token = token.trim();
-        localStorage.setItem("signage_gh_token", token);
-      } else if (token) {
-        alert("Warning: The entered token did not match the expected fine-grained format (github_pat_...).");
-        localStorage.setItem("signage_gh_token", token.trim());
-      }
-    }
-    return token;
-  }
-
-  // Clear token button utility (optional, for logging out)
-  function clearSavedToken() {
-    localStorage.removeItem("signage_gh_token");
-    alert("Token removed from this browser.");
-    location.reload();
-  }
 
   let currentFileSha = null;
   let cachedData = [];
 
+  // Pre-fill start date with today
   document.getElementById("startDate").valueAsDate = new Date();
 
   function toggleType() {
@@ -241,14 +240,43 @@
     document.getElementById("headlineLabel").textContent = type === "rss" ? "Feed Title" : "Headline";
   }
 
+  // Token management via LocalStorage
+  function getAuthToken() {
+    let token = localStorage.getItem("signage_gh_token");
+    if (!token) {
+      token = prompt("Please enter your GitHub Access Token (saved locally in this browser only):");
+      if (token && token.trim()) {
+        token = token.trim();
+        localStorage.setItem("signage_gh_token", token);
+      }
+    }
+    return token;
+  }
+
+  function clearSavedToken() {
+    localStorage.removeItem("signage_gh_token");
+    alert("Token removed from browser storage.");
+    location.reload();
+  }
+
   // Fetch current announcements from GitHub
   async function loadCurrentAnnouncements() {
     const tbody = document.getElementById("entriesTableBody");
-    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:var(--muted);">Loading...</td></tr>';
+    const token = getAuthToken();
+
+    if (!token) {
+      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:var(--danger);">No access token provided. Click "Reset Token" or reload to enter one.</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:var(--muted);">Loading entries from repository...</td></tr>';
 
     try {
       const res = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/contents/${FILE_PATH}`, {
-        headers: { "Authorization": `Bearer ${GITHUB_TOKEN}`, "Accept": "application/vnd.github.v3+json" }
+        headers: { 
+          "Authorization": `Bearer ${token}`, 
+          "Accept": "application/vnd.github.v3+json" 
+        }
       });
 
       if (res.status === 404) {
@@ -258,6 +286,10 @@
         return;
       }
 
+      if (!res.ok) {
+        throw new Error(`GitHub API returned status ${res.status}`);
+      }
+
       const fileData = await res.json();
       currentFileSha = fileData.sha;
       cachedData = JSON.parse(decodeURIComponent(escape(atob(fileData.content))));
@@ -265,7 +297,7 @@
       renderTable();
     } catch (err) {
       console.error(err);
-      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:var(--danger);">Error loading entries. Check repo config or token permissions.</td></tr>';
+      tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:var(--danger);">Error loading entries: ${err.message}. Check your token or repository path.</td></tr>`;
     }
   }
 
@@ -283,12 +315,10 @@
     cachedData.forEach((item, index) => {
       const tr = document.createElement("tr");
 
-      // Badge styling
       let badgeClass = "badge-navy";
       if (item.theme === "theme-gold") badgeClass = "badge-gold";
       if (item.theme === "theme-teal") badgeClass = "badge-teal";
 
-      // Status calculation
       let statusHtml = '<span class="status-active">Active</span>';
       if (item.startDate && item.startDate > todayStr) {
         statusHtml = `<span class="status-pending">Starts ${item.startDate}</span>`;
@@ -322,9 +352,15 @@
 
   // Push updated list to GitHub API
   async function saveToGitHub(updatedList, commitMsg) {
+    const token = getAuthToken();
+    if (!token) throw new Error("No authorization token found.");
+
     const putRes = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/contents/${FILE_PATH}`, {
       method: "PUT",
-      headers: { "Authorization": `Bearer ${GITHUB_TOKEN}`, "Accept": "application/vnd.github.v3+json" },
+      headers: { 
+        "Authorization": `Bearer ${token}`, 
+        "Accept": "application/vnd.github.v3+json" 
+      },
       body: JSON.stringify({
         message: commitMsg,
         content: btoa(unescape(encodeURIComponent(JSON.stringify(updatedList, null, 2)))),
@@ -332,7 +368,11 @@
       })
     });
 
-    if (!putRes.ok) throw new Error(await putRes.text());
+    if (!putRes.ok) {
+      const errBody = await putRes.text();
+      throw new Error(`Save failed (${putRes.status}): ${errBody}`);
+    }
+    
     const data = await putRes.json();
     currentFileSha = data.content.sha;
     cachedData = updatedList;

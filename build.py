@@ -1,7 +1,6 @@
 import urllib.request
 import re
 from datetime import datetime, date
-import html
 
 ICS_URL = "https://www.ascensionschools.org/fs/calendar-manager/events.ics?feed_id=c20467f1-be50-44e0-be8b-9ab7b494654c"
 
@@ -15,24 +14,16 @@ def format_menu_description(raw_desc):
     if not raw_desc:
         return ""
 
-    # Unescape HTML entities (&amp;, &nbsp;, etc.)
-    text = html.unescape(raw_desc)
-    
-    # 1. Convert any HTML breaks or iCal escaped line breaks to a standard delimiter
-    text = re.sub(r'<br\s*/?>|</p>|\\n|\n|\r', '###SPLIT###', text, flags=re.IGNORECASE)
-    
-    # 2. Insert delimiter before key prefixes like "Sandwich:" or "Breakfast:"
-    text = re.sub(r'(?i)(sandwich\s*:|breakfast\s*:)', r'###SPLIT###\1', text)
-    
-    # 3. Insert delimiter between CamelCase boundaries where items collided (e.g. CornTossed -> Corn | Tossed)
-    # Checks for lowercase letter followed directly by an uppercase letter
-    text = re.sub(r'([a-z])([A-Z])', r'\1###SPLIT###\2', text)
+    text = raw_desc.strip()
 
-    # 4. Strip out any remaining HTML tags
-    text = re.sub(r'<[^>]+>', '', text)
+    # 1. Force split before labels like Sandwich: or Breakfast:
+    text = re.sub(r'(?i)\s*(sandwich\s*:|breakfast\s*:)', r'||\1', text)
 
-    # Split into clean, individual lines
-    raw_lines = text.split('###SPLIT###')
+    # 2. Split when a lowercase letter is smashed into an uppercase letter (e.g., CornTossed -> Corn||Tossed)
+    text = re.sub(r'([a-z])([A-Z])', r'\1||\2', text)
+
+    # 3. Break into distinct lines
+    raw_lines = text.split('||')
     lines = [l.strip() for l in raw_lines if l.strip()]
 
     formatted_items = []
@@ -53,7 +44,7 @@ def fetch_events():
     with urllib.request.urlopen(req) as resp:
         raw = resp.read().decode('utf-8', errors='ignore')
 
-    # Unfold wrapped lines in iCal standard
+    # Unfold wrapped lines in iCal format
     raw = re.sub(r'\r\n[ \t]', '', raw)
     lines = raw.splitlines()
 
@@ -83,16 +74,6 @@ def fetch_events():
     today = date.today()
     upcoming = [e for e in events if e["date"] >= today]
     upcoming.sort(key=lambda x: x["date"])
-
-    # --- DEBUG PRINT ---
-    print("\n" + "="*50)
-    print("DEBUG: RAW EVENT DESCRIPTIONS FOUND:")
-    for ev in upcoming[:3]:
-        print(f"\n--- Event: {ev['title']} ({ev['date']}) ---")
-        print(f"RAW REPR: {repr(ev['desc'])}")
-    print("="*50 + "\n")
-    # -------------------
-
     return upcoming[:6]
 
 def main():
@@ -111,13 +92,15 @@ def main():
         """
         cards.append(card)
 
-    with open("index.html", "r", encoding="utf-8") as f:
+    # Read clean template
+    with open("template.html", "r", encoding="utf-8") as f:
         html_content = f.read()
 
     now_str = datetime.now().strftime("%b %d, %I:%M %p")
-    html_content = html_content.replace("BUILD_TIMESTAMP", f"Last updated: {now_str}")
-    html_content = html_content.replace("<!-- EVENTS_PLACEHOLDER -->", "\n".join(cards) if cards else "<p>No upcoming events.</p>")
+    html_content = html_content.replace("{{BUILD_TIMESTAMP}}", f"Last updated: {now_str}")
+    html_content = html_content.replace("{{EVENTS_PLACEHOLDER}}", "\n".join(cards) if cards else "<p>No upcoming events.</p>")
 
+    # Overwrite the deployed index.html
     with open("index.html", "w", encoding="utf-8") as f:
         f.write(html_content)
 

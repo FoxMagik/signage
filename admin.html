@@ -9,134 +9,320 @@
       --card: #1e293b;
       --accent: #38bdf8;
       --text: #f8fafc;
+      --muted: #94a3b8;
       --border: #334155;
+      --danger: #ef4444;
+      --success: #22c55e;
+      --gold: #f59e0b;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       background: var(--bg);
       color: var(--text);
-      padding: 2rem;
-      display: flex;
-      justify-content: center;
+      padding: 2.5rem;
+    }
+    .layout-container {
+      display: grid;
+      grid-template-columns: 460px 1fr;
+      gap: 2rem;
+      max-width: 1400px;
+      margin: 0 auto;
     }
     .panel {
       background: var(--card);
       border: 1px solid var(--border);
       border-radius: 12px;
       padding: 2rem;
-      max-width: 600px;
-      width: 100%;
       box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+      display: flex;
+      flex-direction: column;
     }
-    h2 { margin-bottom: 1.5rem; color: var(--accent); }
-    .form-group { margin-bottom: 1.25rem; display: flex; flex-direction: column; gap: 0.4rem; }
-    label { font-weight: 600; font-size: 0.95rem; }
+    h2 { margin-bottom: 1.5rem; color: var(--accent); font-size: 1.4rem; }
+    .form-group { margin-bottom: 1.2rem; display: flex; flex-direction: column; gap: 0.4rem; }
+    label { font-weight: 600; font-size: 0.9rem; }
     input, select, textarea {
       background: #0b0f19;
       border: 1px solid var(--border);
       border-radius: 6px;
       padding: 0.75rem;
       color: #fff;
-      font-size: 1rem;
+      font-size: 0.95rem;
     }
     input:focus, select:focus, textarea:focus { border-color: var(--accent); outline: none; }
     .row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
-    button {
+    button.primary-btn {
       background: var(--accent);
       color: #0b0f19;
       border: none;
       border-radius: 6px;
-      padding: 0.9rem;
-      font-size: 1.1rem;
+      padding: 0.85rem;
+      font-size: 1rem;
       font-weight: 700;
       cursor: pointer;
-      width: 100%;
-      margin-top: 1rem;
+      margin-top: 0.5rem;
       transition: opacity 0.2s;
     }
-    button:disabled { opacity: 0.5; cursor: not-allowed; }
-    #status { margin-top: 1rem; font-weight: 600; text-align: center; }
+    button.primary-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    #status { margin-top: 1rem; font-weight: 600; font-size: 0.9rem; text-align: center; }
+
+    /* Active Announcements Table */
+    .table-wrapper { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; text-align: left; }
+    th {
+      border-bottom: 2px solid var(--border);
+      padding: 0.75rem 1rem;
+      color: var(--muted);
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    td {
+      border-bottom: 1px solid var(--border);
+      padding: 1rem;
+      font-size: 0.95rem;
+      vertical-align: middle;
+    }
+    .badge {
+      display: inline-block;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+    }
+    .badge-navy { background: rgba(56, 189, 248, 0.2); color: var(--accent); }
+    .badge-gold { background: rgba(245, 158, 11, 0.2); color: var(--gold); }
+    .badge-teal { background: rgba(45, 212, 191, 0.2); color: #2dd4bf; }
+    
+    .status-active { color: var(--success); font-weight: 600; font-size: 0.85rem; }
+    .status-expired { color: var(--danger); font-weight: 600; font-size: 0.85rem; }
+    .status-pending { color: var(--muted); font-weight: 600; font-size: 0.85rem; }
+
+    .delete-btn {
+      background: transparent;
+      color: var(--danger);
+      border: 1px solid var(--danger);
+      border-radius: 4px;
+      padding: 0.4rem 0.75rem;
+      font-size: 0.85rem;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+    .delete-btn:hover { background: var(--danger); color: #fff; }
+    .delete-btn:disabled { opacity: 0.4; cursor: not-allowed; }
   </style>
 </head>
 <body>
 
-<div class="panel">
-  <h2>Post to Signage Display</h2>
-  
-  <div class="form-group">
-    <label>Entry Type</label>
-    <select id="entryType" onchange="toggleType()">
-      <option value="announcement">Announcement / Birthday</option>
-      <option value="rss">Custom RSS Feed</option>
-    </select>
-  </div>
+<div class="layout-container">
 
-  <div class="form-group" id="groupHeadline">
-    <label>Headline</label>
-    <input type="text" id="headline" placeholder="e.g. Happy Birthday Mrs. Robinson!">
-  </div>
-
-  <div class="form-group" id="groupDetails">
-    <label>Details / Message</label>
-    <textarea id="details" rows="3" placeholder="e.g. From the 3rd Grade Team"></textarea>
-  </div>
-
-  <div class="form-group" id="groupRss" style="display:none;">
-    <label>RSS Feed URL</label>
-    <input type="url" id="rssUrl" placeholder="https://example.com/feed.xml">
-  </div>
-
-  <div class="row">
+  <!-- LEFT COLUMN: Post New Entry -->
+  <div class="panel">
+    <h2>Post New Signage Entry</h2>
+    
     <div class="form-group">
-      <label>Card Theme / Background</label>
-      <select id="theme">
-        <option value="theme-navy">District Slate / Navy</option>
-        <option value="theme-gold">Gold Announcement</option>
-        <option value="theme-teal">Teal Highlight</option>
+      <label>Entry Type</label>
+      <select id="entryType" onchange="toggleType()">
+        <option value="announcement">Announcement / Birthday</option>
+        <option value="rss">Custom RSS Feed</option>
       </select>
     </div>
-    <div class="form-group">
-      <label>Display Duration (Seconds)</label>
-      <input type="number" id="duration" value="15" min="5" max="60">
+
+    <div class="form-group" id="groupHeadline">
+      <label id="headlineLabel">Headline</label>
+      <input type="text" id="headline" placeholder="e.g. Happy Birthday Mrs. Robinson!">
+    </div>
+
+    <div class="form-group" id="groupDetails">
+      <label>Details / Message</label>
+      <textarea id="details" rows="3" placeholder="e.g. From the 3rd Grade Team"></textarea>
+    </div>
+
+    <div class="form-group" id="groupRss" style="display:none;">
+      <label>RSS Feed URL</label>
+      <input type="url" id="rssUrl" placeholder="https://example.com/feed.xml">
+    </div>
+
+    <div class="row">
+      <div class="form-group">
+        <label>Theme</label>
+        <select id="theme">
+          <option value="theme-navy">District Slate / Navy</option>
+          <option value="theme-gold">Gold Announcement</option>
+          <option value="theme-teal">Teal Highlight</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Duration (Seconds)</label>
+        <input type="number" id="duration" value="15" min="5" max="60">
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="form-group">
+        <label>Start Date</label>
+        <input type="date" id="startDate">
+      </div>
+      <div class="form-group">
+        <label>End Date (Expiration)</label>
+        <input type="date" id="endDate">
+      </div>
+    </div>
+
+    <button id="submitBtn" class="primary-btn" onclick="submitEntry()">Publish to Display</button>
+    <div id="status"></div>
+  </div>
+
+  <!-- RIGHT COLUMN: Active Announcements List -->
+  <div class="panel">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+      <h2 style="margin-bottom: 0;">Currently Scheduled Items</h2>
+      <button onclick="loadCurrentAnnouncements()" style="background:transparent; border:1px solid var(--border); color:var(--muted); padding:0.4rem 0.8rem; border-radius:4px; cursor:pointer;">Refresh List</button>
+    </div>
+
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>Type / Theme</th>
+            <th>Headline & Details</th>
+            <th>Dates</th>
+            <th>Status</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="entriesTableBody">
+          <tr><td colspan="5" style="text-align:center; color:var(--muted);">Loading entries from repository...</td></tr>
+        </tbody>
+      </table>
     </div>
   </div>
 
-  <div class="row">
-    <div class="form-group">
-      <label>Start Date</label>
-      <input type="date" id="startDate">
-    </div>
-    <div class="form-group">
-      <label>End Date (Expiration)</label>
-      <input type="date" id="endDate">
-    </div>
-  </div>
-
-  <button id="submitBtn" onclick="submitEntry()">Publish to Display</button>
-  <div id="status"></div>
 </div>
 
 <script>
-  // Set your repo details and token here
+  // CONFIGURATION: Replace with your repository details and token
   const GITHUB_REPO = "YOUR_USERNAME/YOUR_REPO_NAME"; 
   const GITHUB_TOKEN = "github_pat_YOUR_TOKEN_HERE";
   const FILE_PATH = "announcements.json";
 
-  // Pre-fill today's date
+  let currentFileSha = null;
+  let cachedData = [];
+
   document.getElementById("startDate").valueAsDate = new Date();
 
   function toggleType() {
     const type = document.getElementById("entryType").value;
     document.getElementById("groupRss").style.display = type === "rss" ? "flex" : "none";
-    document.getElementById("groupHeadline").querySelector("label").textContent = type === "rss" ? "Feed Title" : "Headline";
+    document.getElementById("headlineLabel").textContent = type === "rss" ? "Feed Title" : "Headline";
   }
 
+  // Fetch current announcements from GitHub
+  async function loadCurrentAnnouncements() {
+    const tbody = document.getElementById("entriesTableBody");
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:var(--muted);">Loading...</td></tr>';
+
+    try {
+      const res = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/contents/${FILE_PATH}`, {
+        headers: { "Authorization": `Bearer ${GITHUB_TOKEN}`, "Accept": "application/vnd.github.v3+json" }
+      });
+
+      if (res.status === 404) {
+        cachedData = [];
+        currentFileSha = null;
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:var(--muted);">No announcements file exists yet. Add your first item!</td></tr>';
+        return;
+      }
+
+      const fileData = await res.json();
+      currentFileSha = fileData.sha;
+      cachedData = JSON.parse(decodeURIComponent(escape(atob(fileData.content))));
+
+      renderTable();
+    } catch (err) {
+      console.error(err);
+      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:var(--danger);">Error loading entries. Check repo config or token permissions.</td></tr>';
+    }
+  }
+
+  function renderTable() {
+    const tbody = document.getElementById("entriesTableBody");
+    tbody.innerHTML = "";
+
+    if (!cachedData.length) {
+      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:var(--muted);">No entries currently scheduled.</td></tr>';
+      return;
+    }
+
+    const todayStr = new Date().toISOString().split('T')[0];
+
+    cachedData.forEach((item, index) => {
+      const tr = document.createElement("tr");
+
+      // Badge styling
+      let badgeClass = "badge-navy";
+      if (item.theme === "theme-gold") badgeClass = "badge-gold";
+      if (item.theme === "theme-teal") badgeClass = "badge-teal";
+
+      // Status calculation
+      let statusHtml = '<span class="status-active">Active</span>';
+      if (item.startDate && item.startDate > todayStr) {
+        statusHtml = `<span class="status-pending">Starts ${item.startDate}</span>`;
+      } else if (item.endDate && item.endDate < todayStr) {
+        statusHtml = '<span class="status-expired">Expired</span>';
+      }
+
+      tr.innerHTML = `
+        <td>
+          <span class="badge ${badgeClass}">${item.type || 'Notice'}</span>
+          <div style="font-size:0.75rem; color:var(--muted); margin-top:0.25rem;">${item.duration || 15}s</div>
+        </td>
+        <td>
+          <strong>${item.headline || 'Untitled'}</strong>
+          <div style="font-size:0.85rem; color:var(--muted); margin-top:0.25rem;">
+            ${item.type === 'rss' ? (item.rssUrl || '') : (item.details || '')}
+          </div>
+        </td>
+        <td style="font-size:0.85rem; color:#cbd5e1;">
+          ${item.startDate || 'Immediate'}<br>
+          <span style="color:var(--muted);">to</span> ${item.endDate || 'No end'}
+        </td>
+        <td>${statusHtml}</td>
+        <td>
+          <button class="delete-btn" onclick="deleteEntry(${index})">Delete</button>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  // Push updated list to GitHub API
+  async function saveToGitHub(updatedList, commitMsg) {
+    const putRes = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/contents/${FILE_PATH}`, {
+      method: "PUT",
+      headers: { "Authorization": `Bearer ${GITHUB_TOKEN}`, "Accept": "application/vnd.github.v3+json" },
+      body: JSON.stringify({
+        message: commitMsg,
+        content: btoa(unescape(encodeURIComponent(JSON.stringify(updatedList, null, 2)))),
+        sha: currentFileSha
+      })
+    });
+
+    if (!putRes.ok) throw new Error(await putRes.text());
+    const data = await putRes.json();
+    currentFileSha = data.content.sha;
+    cachedData = updatedList;
+  }
+
+  // Submit new entry
   async function submitEntry() {
     const btn = document.getElementById("submitBtn");
     const status = document.getElementById("status");
     btn.disabled = true;
-    status.textContent = "Connecting to repository...";
+    status.style.color = "var(--muted)";
+    status.textContent = "Committing to repository...";
 
     const newEntry = {
       type: document.getElementById("entryType").value,
@@ -150,55 +336,50 @@
     };
 
     if (!newEntry.headline) {
-      alert("Please enter a headline or title.");
+      alert("Please provide a headline or title.");
       btn.disabled = false;
+      status.textContent = "";
       return;
     }
 
     try {
-      // 1. Fetch current file & SHA
-      const getUrl = `https://api.github.com/repos/${GITHUB_REPO}/contents/${FILE_PATH}`;
-      const getRes = await fetch(getUrl, {
-        headers: { "Authorization": `Bearer ${GITHUB_TOKEN}`, "Accept": "application/vnd.github.v3+json" }
-      });
-
-      let currentData = [];
-      let sha = null;
-
-      if (getRes.status === 200) {
-        const fileJson = await getRes.json();
-        sha = fileJson.sha;
-        currentData = JSON.parse(atob(fileJson.content));
-      }
-
-      // 2. Append new item
-      currentData.push(newEntry);
-
-      // 3. Commit updated file
-      const updateRes = await fetch(getUrl, {
-        method: "PUT",
-        headers: { "Authorization": `Bearer ${GITHUB_TOKEN}`, "Accept": "application/vnd.github.v3+json" },
-        body: JSON.stringify({
-          message: `Add ${newEntry.type}: ${newEntry.headline} [via web admin]`,
-          content: btoa(unescape(encodeURIComponent(JSON.stringify(currentData, null, 2)))),
-          sha: sha
-        })
-      });
-
-      if (updateRes.ok) {
-        status.style.color = "#4ade80";
-        status.textContent = "Success! Display update triggered. Refreshing Anthias soon.";
-        setTimeout(() => location.reload(), 2500);
-      } else {
-        throw new Error(await updateRes.text());
-      }
+      const updatedList = [...cachedData, newEntry];
+      await saveToGitHub(updatedList, `Add ${newEntry.type}: ${newEntry.headline} [via web admin]`);
+      
+      status.style.color = "var(--success)";
+      status.textContent = "Saved! Action triggered to update display.";
+      
+      document.getElementById("headline").value = "";
+      document.getElementById("details").value = "";
+      document.getElementById("rssUrl").value = "";
+      
+      renderTable();
     } catch (err) {
       console.error(err);
-      status.style.color = "#f87171";
-      status.textContent = "Failed to publish. Check console or token permissions.";
+      status.style.color = "var(--danger)";
+      status.textContent = "Failed to save. Check token or permissions.";
+    } finally {
       btn.disabled = false;
     }
   }
+
+  // Delete an existing entry
+  async function deleteEntry(index) {
+    const item = cachedData[index];
+    if (!confirm(`Are you sure you want to remove "${item.headline}"?`)) return;
+
+    try {
+      const updatedList = cachedData.filter((_, i) => i !== index);
+      await saveToGitHub(updatedList, `Remove announcement: ${item.headline} [via web admin]`);
+      renderTable();
+    } catch (err) {
+      console.error(err);
+      alert("Failed to delete entry. Check console or permissions.");
+    }
+  }
+
+  // Initial load
+  loadCurrentAnnouncements();
 </script>
 </body>
 </html>

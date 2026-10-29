@@ -6,7 +6,7 @@ from datetime import datetime, date
 
 # --- OPTIONAL: Paste published Google Sheet CSV URLs here ---
 # If left None, defaults to built-in feeds below
-SHEET_FEEDS_CSV = https://docs.google.com/spreadsheets/d/e/2PACX-1vQUrHDlH1B7BQOYmItL2l_MUEpENhQsqcm_SbMf3PXzUUmwZOZS8DNxsw8TQEJVQmUkA7cSEHyGgdPr/pub?output=csv
+SHEET_FEEDS_CSV = https://docs.google.com/spreadsheets/d/e/2PACX-1vQUrHDlH1B7BQOYmItL2l_MUEpENhQsqcm_SbMf3PXzUUmwZOZS8DNxsw8TQEJVQmUkA7cSEHyGgdPr/pub?gid=0&single=true&output=csv
 # -------------------------------------------------------------
 
 DEFAULT_FEEDS = [

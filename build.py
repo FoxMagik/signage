@@ -10,12 +10,30 @@ def parse_ics_date(val):
         return datetime.strptime(clean[:15], "%Y%m%dT%H%M%S").date()
     return datetime.strptime(clean[:8], "%Y%m%d").date()
 
+def format_menu_description(raw_desc):
+    if not raw_desc:
+        return ""
+    
+    # Split by actual newlines or escaped iCal newlines (\n)
+    lines = [line.strip() for line in re.split(r'\\n|\n|\r', raw_desc) if line.strip()]
+    
+    formatted_items = []
+    for line in lines:
+        # Highlight Breakfast or Sandwich lines if present
+        if line.lower().startswith("breakfast:") or line.lower().startswith("sandwich:"):
+            parts = line.split(":", 1)
+            formatted_items.append(f'<li><strong>{parts[0]}:</strong>{parts[1]}</li>')
+        else:
+            formatted_items.append(f'<li>{line}</li>')
+            
+    return f'<ul class="menu-items">{"".join(formatted_items)}</ul>'
+
 def fetch_events():
     req = urllib.request.Request(ICS_URL, headers={'User-Agent': 'Mozilla/5.0'})
     with urllib.request.urlopen(req) as resp:
         raw = resp.read().decode('utf-8', errors='ignore')
 
-    # Unfold lines
+    # Unfold wrapped lines in iCal standard
     raw = re.sub(r'\r\n[ \t]', '', raw)
     lines = raw.splitlines()
 
@@ -39,7 +57,8 @@ def fetch_events():
         elif ":" in line:
             parts = line.split(":", 1)
             key = parts[0].split(";")[0].strip()
-            val = parts[1].replace("\\,", ",").replace("\\n", " ").strip()
+            # Keep raw escaped newlines intact here so format_menu_description can split them
+            val = parts[1].replace("\\,", ",").strip()
             current[key] = val
 
     today = date.today()
@@ -52,12 +71,13 @@ def main():
     cards = []
     for ev in events:
         formatted_date = ev["date"].strftime("%a, %b %d")
-        desc = (ev["desc"][:120] + "...") if len(ev["desc"]) > 120 else ev["desc"]
+        menu_html = format_menu_description(ev["desc"])
+        
         card = f"""
         <div class="event-card">
           <div class="meta">{formatted_date}</div>
           <h2>{ev['title']}</h2>
-          {'<div class="desc">' + desc + '</div>' if desc else ''}
+          {menu_html}
         </div>
         """
         cards.append(card)

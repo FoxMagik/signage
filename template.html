@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="refresh" content="900">
+  <title>District Events Signage</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card-bg: #1e293b;
+      --text: #f8fafc;
+      --muted: #94a3b8;
+      --accent: #38bdf8;
+      --border: #334155;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      padding: 2.5rem;
+      overflow: hidden;
+    }
+    header {
+      border-bottom: 2px solid var(--accent);
+      padding-bottom: 1rem;
+      margin-bottom: 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    h1 { font-size: 2.2rem; font-weight: 700; }
+    #timestamp { font-size: 1.1rem; color: var(--muted); }
+    #events-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
+      gap: 1.5rem;
+    }
+    .event-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-left: 6px solid var(--accent);
+      border-radius: 8px;
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+    }
+    .event-card h2 { font-size: 1.4rem; color: #fff; line-height: 1.3; }
+    .event-card .meta { font-size: 1.05rem; color: var(--accent); font-weight: 600; }
+    
+    /* Menu items list */
+    .menu-items {
+      list-style-type: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.45rem;
+      margin-top: 0.5rem;
+      padding: 0;
+    }
+    .menu-items li {
+      font-size: 1.05rem;
+      color: #cbd5e1;
+      line-height: 1.3;
+      padding-left: 0.8rem;
+      border-left: 2px solid rgba(255, 255, 255, 0.15);
+    }
+    .menu-items li.special-item {
+      margin-top: 0.4rem;
+      border-left-color: var(--accent);
+    }
+    .menu-items li strong {
+      color: var(--accent);
+      margin-right: 0.35rem;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>District Upcoming Events</h1>
+    <div id="timestamp">{{BUILD_TIMESTAMP}}</div>
+  </header>
+
+  <main id="events-container">
+    {{EVENTS_PLACEHOLDER}}
+  </main>
+</body>
+</html>

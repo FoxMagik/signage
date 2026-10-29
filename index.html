@@ -2,22 +2,23 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Signage Display Feed</title>
+  <title>District Calendar Signage</title>
   <style>
     :root {
-      --bg: #121212;
-      --card-bg: #1e1e1e;
-      --text: #ffffff;
-      --muted: #a0a0a0;
-      --accent: #00bcd4;
+      --bg: #0f172a;
+      --card-bg: #1e293b;
+      --text: #f8fafc;
+      --muted: #94a3b8;
+      --accent: #38bdf8;
+      --border: #334155;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       background: var(--bg);
       color: var(--text);
+      padding: 2.5rem;
       overflow: hidden;
-      padding: 3rem;
     }
     header {
       border-bottom: 2px solid var(--accent);
@@ -27,90 +28,136 @@
       justify-content: space-between;
       align-items: center;
     }
-    h1 { font-size: 2.2rem; font-weight: 600; }
+    h1 { font-size: 2.2rem; font-weight: 700; letter-spacing: -0.5px; }
     #timestamp { font-size: 1.1rem; color: var(--muted); }
-    #feed-container {
+    #events-container {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
       gap: 1.5rem;
     }
-    .feed-card {
+    .event-card {
       background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-left: 6px solid var(--accent);
       border-radius: 8px;
       padding: 1.5rem;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.4);
       display: flex;
       flex-direction: column;
-      gap: 0.75rem;
+      gap: 0.6rem;
     }
-    .feed-card h2 { font-size: 1.3rem; color: var(--accent); line-height: 1.3; }
-    .feed-card p { font-size: 1rem; color: #ddd; line-height: 1.4; }
-    .feed-card .date { font-size: 0.85rem; color: var(--muted); align-self: flex-start; }
+    .event-card h2 { font-size: 1.3rem; color: #fff; line-height: 1.3; }
+    .event-card .meta { font-size: 1rem; color: var(--accent); font-weight: 600; }
+    .event-card .desc { font-size: 0.95rem; color: var(--muted); line-height: 1.4; }
   </style>
 </head>
 <body>
 
   <header>
-    <h1 id="feed-title">District Updates & News</h1>
-    <div id="timestamp">Updating...</div>
+    <h1 id="feed-title">District Upcoming Events</h1>
+    <div id="timestamp">Loading calendar...</div>
   </header>
 
-  <main id="feed-container">
-    <p>Loading feeds...</p>
+  <main id="events-container">
+    <p>Retrieving schedule...</p>
   </main>
 
   <script>
-    // Replace with your actual RSS feed URL
-    const RSS_URL = 'https://news.google.com/rss';
-    const PROXY_URL = `https://api.allorigins.win/get?url=${encodeURIComponent(RSS_URL)}`;
-    
-    // Refresh interval for Anthias display (e.g., fetch new feed every 5 minutes)
-    const REFRESH_RATE_MS = 5 * 60 * 1000;
+    const ICS_URL = 'https://www.ascensionschools.org/fs/calendar-manager/events.ics?feed_id=c20467f1-be50-44e0-be8b-9ab7b494654c';
+    const PROXY_URL = `https://api.allorigins.win/get?url=${encodeURIComponent(ICS_URL)}`;
+    const REFRESH_RATE_MS = 15 * 60 * 1000; // Refreshes every 15 minutes
 
-    async function loadFeed() {
+    // Converts iCal date string (e.g., 20261029T140000Z or 20261029) to JS Date
+    function parseIcsDate(dateStr) {
+      if (!dateStr) return null;
+      const clean = dateStr.replace(/[^0-9T]/g, '');
+      const year = parseInt(clean.substring(0, 4), 10);
+      const month = parseInt(clean.substring(4, 6), 10) - 1;
+      const day = parseInt(clean.substring(6, 8), 10);
+      
+      if (clean.includes('T')) {
+        const hour = parseInt(clean.substring(9, 11), 10);
+        const min = parseInt(clean.substring(11, 13), 10);
+        return new Date(Date.UTC(year, month, day, hour, min));
+      }
+      return new Date(year, month, day);
+    }
+
+    // Unfolds wrapped lines and extracts VEVENT blocks
+    function parseICS(rawData) {
+      const unfolded = rawData.replace(/\r\n[ \t]/g, '').replace(/\n[ \t]/g, '');
+      const lines = unfolded.split(/\r\n|\n|\r/);
+      const events = [];
+      let currentEvent = null;
+
+      for (let line of lines) {
+        if (line.startsWith('BEGIN:VEVENT')) {
+          currentEvent = {};
+        } else if (line.startsWith('END:VEVENT')) {
+          if (currentEvent) events.push(currentEvent);
+          currentEvent = null;
+        } else if (currentEvent) {
+          const sep = line.indexOf(':');
+          if (sep > -1) {
+            let key = line.substring(0, sep).split(';')[0].toUpperCase();
+            let val = line.substring(sep + 1).replace(/\\,/g, ',').replace(/\\n/g, ' ').trim();
+            currentEvent[key] = val;
+          }
+        }
+      }
+      return events;
+    }
+
+    async function loadCalendar() {
       try {
         const response = await fetch(PROXY_URL);
         const data = await response.json();
+        const events = parseICS(data.contents);
         
-        // Parse the raw XML contents
-        const parser = new DOMParser();
-        const xmlDoc = parser.parseFromString(data.contents, "application/xml");
-        const items = xmlDoc.querySelectorAll("item");
-        
-        const container = document.getElementById("feed-container");
+        const now = new Date();
+        now.setHours(0, 0, 0, 0); // Include events happening today
+
+        // Parse dates, filter for future/current events, and sort
+        const processed = events
+          .map(ev => ({
+            title: ev.SUMMARY || 'Untitled Event',
+            date: parseIcsDate(ev.DTSTART),
+            desc: ev.DESCRIPTION || ''
+          }))
+          .filter(ev => ev.date && ev.date >= now)
+          .sort((a, b) => a.date - b.date);
+
+        const container = document.getElementById("events-container");
         container.innerHTML = "";
 
-        // Render top 6 items
-        Array.from(items).slice(0, 6).forEach(item => {
-          const title = item.querySelector("title")?.textContent || "Untitled";
-          const pubDate = item.querySelector("pubDate")?.textContent || "";
-          
-          // Basic HTML strip for summary/description
-          let desc = item.querySelector("description")?.textContent || "";
-          const tmp = document.createElement("div");
-          tmp.innerHTML = desc;
-          const cleanDesc = tmp.textContent || tmp.innerText || "";
+        if (processed.length === 0) {
+          container.innerHTML = "<p>No upcoming events scheduled.</p>";
+          return;
+        }
 
+        // Show the top 6 upcoming events
+        processed.slice(0, 6).forEach(ev => {
+          const dateOptions = { weekday: 'short', month: 'short', day: 'numeric' };
+          const formattedDate = ev.date.toLocaleDateString(undefined, dateOptions);
+          
           const card = document.createElement("div");
-          card.classList.add("feed-card");
+          card.classList.add("event-card");
           card.innerHTML = `
-            <h2>${title}</h2>
-            <p>${cleanDesc.substring(0, 160)}${cleanDesc.length > 160 ? '...' : ''}</p>
-            <div class="date">${pubDate ? new Date(pubDate).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : ''}</div>
+            <div class="meta">${formattedDate}</div>
+            <h2>${ev.title}</h2>
+            ${ev.desc ? `<div class="desc">${ev.desc.substring(0, 120)}...</div>` : ''}
           `;
           container.appendChild(card);
         });
 
-        document.getElementById("timestamp").textContent = `Last synced: ${new Date().toLocaleTimeString()}`;
+        document.getElementById("timestamp").textContent = `Last synced: ${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
       } catch (err) {
-        console.error("Feed error:", err);
+        console.error("ICS load error:", err);
         document.getElementById("timestamp").textContent = "Sync failed. Retrying...";
       }
     }
 
-    // Initial run and periodic poll
-    loadFeed();
-    setInterval(loadFeed, REFRESH_RATE_MS);
+    loadCalendar();
+    setInterval(loadCalendar, REFRESH_RATE_MS);
   </script>
 </body>
 </html>

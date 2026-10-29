@@ -2,128 +2,283 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta http-equiv="refresh" content="900">
-  <title>District Events Signage</title>
+  <meta http-equiv="refresh" content="900"> <!-- Soft pull every 15m -->
+  <title>District Digital Signage</title>
   <style>
     :root {
-      --bg: #0f172a;
-      --card-bg: #1e293b;
+      --bg: #0b0f19;
+      --card-bg: #151e32;
       --text: #f8fafc;
       --muted: #94a3b8;
       --accent: #38bdf8;
-      --border: #334155;
+      --gold: #f59e0b;
+      --border: #1e293b;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       background: var(--bg);
       color: var(--text);
-      padding: 2.5rem;
+      width: 100vw;
+      height: 100vh;
       overflow: hidden;
+      display: flex;
+      flex-direction: column;
     }
     header {
+      height: 10vh;
+      padding: 0 3rem;
       border-bottom: 2px solid var(--accent);
-      padding-bottom: 1rem;
-      margin-bottom: 2rem;
       display: flex;
       justify-content: space-between;
       align-items: center;
+      background: rgba(15, 23, 42, 0.7);
     }
-    h1 { font-size: 2.2rem; font-weight: 700; }
-    #timestamp { font-size: 1.1rem; color: var(--muted); }
-    #events-container {
+    header h1 { font-size: 2.2rem; font-weight: 700; color: #fff; }
+    #clock { font-size: 1.5rem; color: var(--accent); font-weight: 600; }
+
+    main {
+      height: 85vh;
+      padding: 2.5rem 3rem;
+      position: relative;
+    }
+    .slide {
+      position: absolute;
+      top: 2.5rem;
+      left: 3rem;
+      right: 3rem;
+      bottom: 2.5rem;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.8s ease-in-out, visibility 0.8s;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+    .slide.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    /* Grid Layout for Menus & Feeds */
+    .grid-container {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
       gap: 1.5rem;
+      height: 100%;
     }
-    .event-card {
+    .card {
       background: var(--card-bg);
       border: 1px solid var(--border);
       border-left: 6px solid var(--accent);
-      border-radius: 8px;
+      border-radius: 12px;
       padding: 1.5rem;
       display: flex;
       flex-direction: column;
       gap: 0.6rem;
     }
-    .event-card h2 { font-size: 1.4rem; color: #fff; line-height: 1.3; }
-    .event-card .meta { font-size: 1.05rem; color: var(--accent); font-weight: 600; }
-    
-    /* Menu items list */
+    .card.notice { border-left-color: var(--gold); }
+    .card h2 { font-size: 1.4rem; color: #fff; }
+    .meta { font-size: 1rem; color: var(--accent); font-weight: 600; }
+    .card.notice .meta { color: var(--gold); }
+
     .menu-items {
       list-style-type: none;
       display: flex;
       flex-direction: column;
-      gap: 0.45rem;
+      gap: 0.4rem;
       margin-top: 0.5rem;
-      padding: 0;
     }
     .menu-items li {
       font-size: 1.05rem;
       color: #cbd5e1;
-      line-height: 1.3;
       padding-left: 0.8rem;
       border-left: 2px solid rgba(255, 255, 255, 0.15);
     }
     .menu-items li.special-item {
-      margin-top: 0.4rem;
       border-left-color: var(--accent);
     }
-    .menu-items li strong {
+    .menu-items li strong { color: var(--accent); margin-right: 0.35rem; }
+
+    /* Single Focus Slides (NASA, Announcement, Word of Day) */
+    .hero-layout {
+      height: 100%;
+      background: var(--card-bg);
+      border-radius: 16px;
+      padding: 2.5rem;
+      display: flex;
+      gap: 2.5rem;
+      align-items: center;
+    }
+    .hero-img {
+      max-width: 50%;
+      max-height: 100%;
+      border-radius: 12px;
+      object-fit: cover;
+    }
+    .hero-content {
+      display: flex;
+      flex-direction: column;
+      gap: 1.2rem;
+    }
+    .hero-tag {
+      align-self: flex-start;
+      background: rgba(56, 189, 248, 0.15);
       color: var(--accent);
-      margin-right: 0.35rem;
+      padding: 0.4rem 1rem;
+      border-radius: 20px;
+      font-weight: 700;
+      text-transform: uppercase;
+      font-size: 0.85rem;
+    }
+    .hero-content h2 { font-size: 2.8rem; line-height: 1.2; }
+    .hero-content p { font-size: 1.3rem; color: #cbd5e1; line-height: 1.6; }
+
+    footer {
+      height: 5vh;
+      background: #070a10;
+      display: flex;
+      align-items: center;
+      padding: 0 3rem;
+      color: var(--muted);
+      font-size: 0.9rem;
+      justify-content: space-between;
     }
   </style>
 </head>
 <body>
+
   <header>
-    <h1>District Upcoming Events</h1>
-    <div id="timestamp">Last updated: Oct 29, 05:24 PM</div>
+    <h1 id="slide-title">Ascension Signage Network</h1>
+    <div id="clock">--:-- --</div>
   </header>
 
-  <main id="events-container">
+  <main id="slide-viewport">
     
-        <div class="event-card">
-          <div class="meta">Thu, Oct 29</div>
-          <h2>Chicken & Sausage Pastalaya</h2>
-          <ul class="menu-items"><li>Corn</li><li>Tossed Salad</li><li>Fruit Juice</li><li>Whole Wheat Roll</li><li class="special-item"><strong>Sandwich:</strong> Chicken Patty on Bun</li><li class="special-item"><strong>Breakfast:</strong> Sausage Biscuit</li></ul>
+        <div class="slide active" data-title="District Lunch & Breakfast" data-duration="25">
+          <div class="grid-container">
+            
+            <div class="card">
+              <div class="meta">Thu, Oct 29</div>
+              <h2>Chicken & Sausage Pastalaya</h2>
+              <ul class="menu-items"><li>Corn</li><li>Tossed Salad</li><li>Fruit Juice</li><li>Whole Wheat Roll</li><li class="special-item"><strong>Sandwich:</strong> Chicken Patty on Bun</li><li class="special-item"><strong>Breakfast:</strong> Sausage Biscuit</li></ul>
+            </div>
+            
+            <div class="card">
+              <div class="meta">Fri, Oct 30</div>
+              <h2>Hamburger on Bun</h2>
+              <ul class="menu-items"><li>Oven Fries</li><li>Green Beans</li><li>Lettuce Salad</li><li>Peaches</li><li class="special-item"><strong>Sandwich:</strong> Spicy Chicken Patty on Bun</li><li class="special-item"><strong>Breakfast:</strong> Buffet</li></ul>
+            </div>
+            
+          </div>
         </div>
         
 
-        <div class="event-card">
-          <div class="meta">Fri, Oct 30</div>
-          <h2>Hamburger on Bun</h2>
-          <ul class="menu-items"><li>Oven Fries</li><li>Green Beans</li><li>Lettuce Salad</li><li>Peaches</li><li class="special-item"><strong>Sandwich:</strong> Spicy Chicken Patty on Bun</li><li class="special-item"><strong>Breakfast:</strong> Buffet</li></ul>
+        <div class="slide" data-title="Upcoming District Notices" data-duration="20">
+          <div class="grid-container">
+            
+            <div class="card notice">
+              <div class="meta">Tue, Nov 03</div>
+              <h2>Election Day</h2>
+              <p style="margin-top:0.5rem; color:#e2e8f0; font-size:1.1rem;">School Holiday / District Closed</p>
+            </div>
+            
+            <div class="card notice">
+              <div class="meta">Mon, Nov 23</div>
+              <h2>Thanksgiving Break</h2>
+              <p style="margin-top:0.5rem; color:#e2e8f0; font-size:1.1rem;">School Holiday / District Closed</p>
+            </div>
+            
+            <div class="card notice">
+              <div class="meta">Mon, Dec 21</div>
+              <h2>Christmas/Winter Break</h2>
+              <p style="margin-top:0.5rem; color:#e2e8f0; font-size:1.1rem;">School Holiday / District Closed</p>
+            </div>
+            
+            <div class="card notice">
+              <div class="meta">Mon, Jan 18</div>
+              <h2>Dr. Martin Luther King, Jr. Holiday</h2>
+              <p style="margin-top:0.5rem; color:#e2e8f0; font-size:1.1rem;">School Holiday / District Closed</p>
+            </div>
+            
+            <div class="card notice">
+              <div class="meta">Mon, Feb 08</div>
+              <h2>Mardi Gras Holidays</h2>
+              <p style="margin-top:0.5rem; color:#e2e8f0; font-size:1.1rem;">School Holiday / District Closed</p>
+            </div>
+            
+            <div class="card notice">
+              <div class="meta">Fri, Mar 26</div>
+              <h2>Easter/Spring Break</h2>
+              <p style="margin-top:0.5rem; color:#e2e8f0; font-size:1.1rem;">School Holiday / District Closed</p>
+            </div>
+            
+          </div>
         </div>
         
 
-        <div class="event-card">
-          <div class="meta">Tue, Nov 03</div>
-          <h2>Election Day</h2>
-          
-        </div>
-        
+        <div class="slide" data-title="Word of the Day" data-duration="18">
+          <div class="hero-layout">
+            <div class="hero-content">
+              <span class="hero-tag">Merriam-Webster</span>
+              <h2 style="font-size: 3.8rem; color: var(--accent);">shindig</h2>
+              <p style="font-size: 1.4rem;">Merriam-Webster's Word of the Day for October 29, 2026 is:
+    
+  
+  
+  
+    shindig &#149; \SHIN-dig\&nbsp; &#149; noun
+    Shindig is an informal word for a big party.
 
-        <div class="event-card">
-          <div class="meta">Mon, Nov 23</div>
-          <h2>Thanksgiving Break</h2>
-          
-        </div>
-        
+// Our friends are in town this weekend, so we’re hosting a shindig at our place on Saturday night.
 
-        <div class="event-card">
-          <div class="meta">Mon, Dec 21</div>
-          <h2>Christmas/Winter Break</h2>
-          
-        </div>
-        
-
-        <div class="event-card">
-          <div class="meta">Mon, Jan 18</div>
-          <h2>Dr. Martin Luther King, Jr. Holiday</h2>
-          
+See the entry >
+  
+  
+  
+    Examples:
+    “It’s the night before Halloween, a...</p>
+            </div>
+          </div>
         </div>
         
   </main>
+
+  <footer>
+    <span id="footer-left">Ascension Public Schools</span>
+    <span id="footer-sync">Sync: Oct 29, 07:57 PM</span>
+  </footer>
+
+  <script>
+    // Live Clock
+    function updateClock() {
+      const now = new Date();
+      document.getElementById('clock').textContent = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    // Slide Carousel Engine
+    const slides = Array.from(document.querySelectorAll('.slide'));
+    let currentIndex = 0;
+
+    function playSlides() {
+      if (!slides.length) return;
+
+      slides.forEach(s => s.classList.remove('active'));
+      const activeSlide = slides[currentIndex];
+      activeSlide.classList.add('active');
+
+      const title = activeSlide.getAttribute('data-title') || 'Ascension Signage Network';
+      document.getElementById('slide-title').textContent = title;
+
+      const duration = parseInt(activeSlide.getAttribute('data-duration') || '15', 10) * 1000;
+
+      currentIndex = (currentIndex + 1) % slides.length;
+      setTimeout(playSlides, duration);
+    }
+
+    playSlides();
+  </script>
 </body>
 </html>

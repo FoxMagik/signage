@@ -14,19 +14,19 @@ DEFAULT_FEEDS = [
         "type": "menu",
         "title": "Cafeteria Lunch & Breakfast",
         "url": "https://www.ascensionschools.org/fs/calendar-manager/events.ics?feed_id=c20467f1-be50-44e0-be8b-9ab7b494654c",
-        "duration": 25
+        "duration": 10
     },
     {
         "type": "nasa",
         "title": "NASA Astronomy Picture of the Day",
         "url": "https://api.nasa.gov/planetary/apod?api_key=DEMO_KEY",
-        "duration": 20
+        "duration": 10
     },
     {
         "type": "wotd",
         "title": "Merriam-Webster Word of the Day",
         "url": "https://www.merriam-webster.com/wotd/feed/rss2",
-        "duration": 18
+        "duration": 10
     }
 ]
 

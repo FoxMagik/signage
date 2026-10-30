@@ -34,5 +34,18 @@ jobs:
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git add index.html display.html announcements.json
-          git diff --quiet && git diff --staged --quiet || (git commit -m "Auto-update signage feed [skip ci]" && git push)
+          
+          # Force add all generated files
+          git add -f index.html display.html announcements.json
+          
+          # Print status so we can see what Git sees in the runner log
+          git status
+          
+          # Commit and push if modified
+          if [ -n "$(git status --porcelain)" ]; then
+            git commit -m "Auto-update signage feed [skip ci]"
+            git push
+            echo "Changes pushed successfully."
+          else
+            echo "No changes detected by Git."
+          fi

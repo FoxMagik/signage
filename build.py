@@ -196,6 +196,7 @@ def parse_generic_rss_slide(title, rss_url, duration, theme):
 def load_user_announcements_and_feeds():
     slides = []
     if not os.path.exists(ANNOUNCEMENTS_FILE):
+        print(f"Notice: {ANNOUNCEMENTS_FILE} not found on disk.")
         return slides
 
     try:
@@ -213,8 +214,10 @@ def load_user_announcements_and_feeds():
 
         # Scheduling checks
         if start_date and start_date > today_str:
+            print(f"Skipping '{item.get('headline')}': Starts in future ({start_date})")
             continue
         if end_date and end_date < today_str:
+            print(f"Skipping '{item.get('headline')}': Expired on ({end_date})")
             continue
 
         theme = item.get("theme", "theme-navy")
@@ -287,7 +290,7 @@ def main():
     if wotd_slide:
         slides_html.append(wotd_slide)
 
-    # Fallback if everything failed
+    # Fallback if nothing generated
     if not slides_html:
         slides_html.append("""
         <div class="slide" data-title="Ascension Signage" data-duration="15">
@@ -300,6 +303,11 @@ def main():
         </div>
         """)
 
+    # Ensure strictly the first slide gets 'active' to start the CSS animation
+    cleaned_slides = [s.replace('class="slide active', 'class="slide') for s in slides_html]
+    cleaned_slides[0] = cleaned_slides[0].replace('class="slide', 'class="slide active', 1)
+    slides_html = cleaned_slides
+
     # Read template and inject slides
     with open("template_display.html", "r", encoding="utf-8") as f:
         template = f.read()
@@ -308,11 +316,13 @@ def main():
     output = template.replace("{{BUILD_TIMESTAMP}}", f"Sync: {now_str}")
     output = output.replace("{{SLIDES_HTML}}", "\n".join(slides_html))
 
-    # Write both display.html and index.html
+    # Overwrite deployment targets
     with open("display.html", "w", encoding="utf-8") as f:
         f.write(output)
     with open("index.html", "w", encoding="utf-8") as f:
         f.write(output)
+
+    print(f"Build complete. Rendered {len(slides_html)} slides successfully.")
 
 if __name__ == "__main__":
     main()

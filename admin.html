@@ -36,7 +36,6 @@
     h1 { font-size: 1.3rem; color: var(--accent); }
     .status-badge { font-size: 0.85rem; color: var(--muted); }
 
-    /* Compact 2-Column Dashboard */
     .dashboard {
       display: grid;
       grid-template-columns: 1.25fr 1fr;
@@ -66,7 +65,6 @@
       align-items: center;
     }
 
-    /* Form Styles */
     .form-group { margin-bottom: 0.65rem; }
     label { display: block; font-size: 0.8rem; font-weight: 600; color: #cbd5e1; margin-bottom: 0.2rem; }
     input, select, textarea {
@@ -79,6 +77,12 @@
       font-size: 0.85rem;
     }
     textarea { height: 60px; resize: none; }
+
+    /* Calendar inputs clickable everywhere */
+    input[type="date"] {
+      cursor: pointer;
+      color-scheme: dark;
+    }
 
     .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; }
     .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.5rem; }
@@ -96,7 +100,6 @@
     }
     button:hover { opacity: 0.9; }
 
-    /* Collapsible Auth drawer */
     details.auth-drawer {
       background: #0b0f19;
       border: 1px solid var(--border);
@@ -108,7 +111,6 @@
     details summary { cursor: pointer; color: var(--accent); font-weight: 600; outline: none; }
     .auth-fields { margin-top: 0.5rem; display: grid; grid-template-columns: 1fr 1fr auto; gap: 0.5rem; align-items: end; }
 
-    /* Scheduled Items Scrollable List */
     .item-list-container {
       flex: 1;
       overflow-y: auto;
@@ -146,7 +148,6 @@
     <div class="status-badge" id="headerStatus">Ready</div>
   </header>
 
-  <!-- Collapsible Auth Panel -->
   <details class="auth-drawer" id="authDetails">
     <summary>🔑 Cloudflare Proxy / Access Settings</summary>
     <div class="auth-fields">
@@ -156,7 +157,7 @@
       </div>
       <div>
         <label>Cloudflare Worker URL</label>
-        <input type="url" id="proxyUrl" placeholder="https://....workers.dev">
+        <input type="url" id="proxyUrl" placeholder="https://signage-proxy.aebstryakt.workers.dev">
       </div>
       <button type="button" onclick="saveAuth()">Save</button>
     </div>
@@ -214,11 +215,11 @@
           </div>
           <div class="form-group">
             <label>Start Date</label>
-            <input type="date" id="startDate">
+            <input type="date" id="startDate" onclick="triggerDatePicker(this)">
           </div>
           <div class="form-group">
             <label>End Date</label>
-            <input type="date" id="endDate">
+            <input type="date" id="endDate" onclick="triggerDatePicker(this)">
           </div>
         </div>
 
@@ -242,6 +243,17 @@
     const REPO = "FoxMagik/signage";
     let fileSha = "";
     let currentAnnouncements = [];
+
+    // Trigger browser date picker on click anywhere inside the input box
+    function triggerDatePicker(inputElem) {
+      if ('showPicker' in HTMLInputElement.prototype) {
+        try {
+          inputElem.showPicker();
+        } catch (e) {
+          // Fallback if browser restricts showPicker
+        }
+      }
+    }
 
     function saveAuth() {
       localStorage.setItem("signage_auth", document.getElementById("authKey").value.trim());
@@ -344,24 +356,36 @@
       const status = document.getElementById("headerStatus");
       status.textContent = "Publishing...";
 
-      const payload = {
-        message: `${actionName} via admin [skip ci]`,
-        content: btoa(unescape(encodeURIComponent(JSON.stringify(currentAnnouncements, null, 2)))),
-        sha: fileSha
-      };
-
       try {
+        // Fetch the fresh SHA hash directly before writing to prevent 422 conflicts
+        const shaRes = await fetch(`https://api.github.com/repos/${REPO}/contents/announcements.json?t=${Date.now()}`);
+        if (!shaRes.ok) throw new Error("Could not retrieve current file state from GitHub.");
+        const shaData = await shaRes.json();
+        fileSha = shaData.sha;
+
+        const payload = {
+          message: `${actionName} via admin [skip ci]`,
+          content: btoa(unescape(encodeURIComponent(JSON.stringify(currentAnnouncements, null, 2)))),
+          sha: fileSha
+        };
+
         let resp;
         if (proxy) {
           resp = await fetch(proxy, {
             method: "POST",
-            headers: { "Content-Type": "application/json", "X-Admin-Pin": auth },
+            headers: { 
+              "Content-Type": "application/json", 
+              "X-Admin-Pin": auth 
+            },
             body: JSON.stringify(payload)
           });
         } else {
           resp = await fetch(`https://api.github.com/repos/${REPO}/contents/announcements.json`, {
             method: "PUT",
-            headers: { "Authorization": `token ${auth}`, "Content-Type": "application/json" },
+            headers: { 
+              "Authorization": `token ${auth}`, 
+              "Content-Type": "application/json" 
+            },
             body: JSON.stringify(payload)
           });
         }
@@ -372,19 +396,22 @@
           document.getElementById("details").value = "";
           document.getElementById("imageUrl").value = "";
           document.getElementById("rssUrl").value = "";
+          document.getElementById("startDate").value = "";
+          document.getElementById("endDate").value = "";
           loadFeed();
+          alert("Published! Signage will update shortly.");
         } else {
           const errData = await resp.text();
           alert("Publish failed: " + errData);
           status.textContent = "Error saving";
         }
       } catch (err) {
-        alert("Network error: " + err.message);
-        status.textContent = "Network error";
+        alert("Commit error: " + err.message);
+        status.textContent = "Error";
       }
     }
 
-    // Init
+    // Init credentials
     document.getElementById("authKey").value = localStorage.getItem("signage_auth") || "";
     document.getElementById("proxyUrl").value = localStorage.getItem("signage_proxy") || "";
     toggleFormFields();

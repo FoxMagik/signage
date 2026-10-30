@@ -28,5 +28,16 @@
     "duration": 15,
     "startDate": "2026-10-30",
     "endDate": ""
+  },
+  {
+    "type": "announcement",
+    "headline": "It's Your Birthday?!",
+    "details": "No one told us!",
+    "imageUrl": "https://i.pinimg.com/736x/c3/ea/39/c3ea391992115044c25e7430b57424bb.jpg",
+    "rssUrl": "",
+    "theme": "theme-navy",
+    "duration": 15,
+    "startDate": "2026-10-30",
+    "endDate": ""
   }
 ]

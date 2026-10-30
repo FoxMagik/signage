@@ -29,23 +29,18 @@ jobs:
         with:
           python-version: '3.x'
 
-      - name: Fetch ICS and rebuild index.html
+      - name: Sync remote branch
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git pull --rebase origin main || true
+
+      - name: Fetch feeds and rebuild display
         run: python build.py
 
       - name: Commit and push changes
         run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          
-          # Pull latest remote changes first in case admin.html just wrote a commit
-          git pull --rebase origin main || true
-          
-          # Force track all generated targets
           git add -f index.html display.html announcements.json
-          
-          git status
-          
-          # Only commit if actual diffs exist
           if ! git diff --staged --quiet; then
             git commit -m "Auto-update signage display [skip ci]"
             git push origin main

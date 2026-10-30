@@ -23,11 +23,9 @@ def http_get(url):
 
 def parse_weather_slide():
     try:
-        # Step 1: Get forecast grid URL from points
         point_data = json.loads(http_get(NWS_POINTS_URL))
         forecast_url = point_data["properties"]["forecast"]
 
-        # Step 2: Fetch forecast periods
         forecast_data = json.loads(http_get(forecast_url))
         periods = forecast_data["properties"]["periods"][:3]
 
@@ -36,9 +34,9 @@ def parse_weather_slide():
             cards.append(f"""
             <div class="card" style="border-left-color: #38bdf8;">
               <div class="meta">{p['name']}</div>
-              <h2 style="font-size: 2.2rem; margin: 0.3rem 0;">{p['temperature']}&deg;{p['temperatureUnit']}</h2>
-              <div style="font-size: 1.1rem; color: #fff; font-weight: 600;">{p['shortForecast']}</div>
-              <p style="margin-top: 0.5rem; color: #94a3b8; font-size: 0.95rem; line-height: 1.4;">{p['detailedForecast'][:130]}...</p>
+              <h2 style="font-size: 2.4rem; margin: 0.3rem 0;">{p['temperature']}&deg;{p['temperatureUnit']}</h2>
+              <div style="font-size: 1.25rem; color: #fff; font-weight: 600; margin-bottom: 0.4rem;">{p['shortForecast']}</div>
+              <p style="color: #94a3b8; font-size: 1.05rem; line-height: 1.5;">{p['detailedForecast'][:150]}...</p>
             </div>
             """)
 
@@ -127,13 +125,13 @@ def parse_ics_menu_and_notices(url):
             <div class="card notice">
               <div class="meta">{d_str}</div>
               <h2>{ev['title']}</h2>
-              <p style="margin-top:0.5rem; color:#e2e8f0; font-size:1.1rem;">{notice_text}</p>
+              <p style="margin-top:0.6rem; color:#e2e8f0; font-size:1.2rem; line-height:1.5;">{notice_text}</p>
             </div>
             """)
 
     return menu_cards[:6], holiday_cards[:6]
 
-# ----------------- 3. CUSTOM RSS FEEDS -----------------
+# ----------------- 3. RSS PARSER (HERO IMAGES & SCALED TEXT) -----------------
 
 def parse_generic_rss_slide(title, rss_url, duration, theme):
     try:
@@ -145,58 +143,61 @@ def parse_generic_rss_slide(title, rss_url, duration, theme):
         if not items:
             return ""
 
-        # Take strictly the single latest entry for hero presentation
         latest = items[0]
         i_title = latest.find("title").text if latest.find("title") is not None else title
         i_desc = latest.find("description").text if latest.find("description") is not None else ""
         
-        # 1. Search for an image tag (enclosure, media:content, or raw HTML img)
+        # Enclosure, media:content, or raw HTML image extraction
         img_url = ""
         enclosure = latest.find("enclosure")
         if enclosure is not None and "image" in enclosure.attrib.get("type", ""):
             img_url = enclosure.attrib.get("url", "")
             
         if not img_url:
-            # Check for media:content
             for elem in latest:
                 if elem.tag.endswith("content") and "image" in elem.attrib.get("type", ""):
                     img_url = elem.attrib.get("url", "")
                     break
 
         if not img_url:
-            # Search for inline <img src="..."> in description
             match = re.search(r'<img[^>]+src=["\']([^"\']+)["\']', i_desc)
             if match:
                 img_url = match.group(1)
 
-        # 2. Clean HTML from the description text
-        clean_desc = re.sub(r'<[^>]+>', '', i_desc).strip()
-        if len(clean_desc) > 380:
-            clean_desc = clean_desc[:380] + "..."
+        clean_desc = re.sub(r'<[^>]+>', ' ', i_desc)
+        clean_desc = re.sub(r'\s+', ' ', clean_desc).strip()
 
-        # 3. Render Hero with Image (NASA style)
+        # Image Layout (e.g. NASA APOD)
         if img_url:
+            if len(clean_desc) > 340:
+                clean_desc = clean_desc[:340] + "..."
+
             return f"""
             <div class="slide {theme}" data-title="{title}" data-duration="{duration}">
-              <div class="hero-layout" style="display: flex; gap: 3rem; align-items: center; padding: 3rem;">
-                <img src="{img_url}" alt="{i_title}" style="max-width: 48%; max-height: 70vh; border-radius: 12px; object-fit: cover; box-shadow: 0 8px 24px rgba(0,0,0,0.5);">
-                <div class="hero-content" style="flex: 1;">
-                  <span class="hero-tag">{title}</span>
-                  <h2 style="font-size: 2.5rem; line-height: 1.2; margin-bottom: 1rem;">{i_title}</h2>
-                  <p style="font-size: 1.3rem; line-height: 1.6; color: #cbd5e1;">{clean_desc}</p>
+              <div class="hero-layout">
+                <div class="hero-media-layout">
+                  <img src="{img_url}" alt="{i_title}">
+                  <div class="hero-media-content">
+                    <span class="hero-tag">{title}</span>
+                    <h2 style="font-size: 2.8rem; line-height: 1.2; margin-bottom: 1.2rem;">{i_title}</h2>
+                    <p style="font-size: 1.5rem; line-height: 1.6; color: #cbd5e1;">{clean_desc}</p>
+                  </div>
                 </div>
               </div>
             </div>
             """
 
-        # 4. Render Hero Text Only (Word of the Day style)
+        # Text-only Layout (e.g. Word of the Day)
+        if len(clean_desc) > 520:
+            clean_desc = clean_desc[:520] + "..."
+
         return f"""
         <div class="slide {theme}" data-title="{title}" data-duration="{duration}">
-          <div class="hero-layout" style="padding: 4rem;">
-            <div class="hero-content" style="max-width: 900px;">
+          <div class="hero-layout">
+            <div class="hero-content" style="max-width: 100%;">
               <span class="hero-tag">{title}</span>
-              <h2 style="font-size: 3.5rem; line-height: 1.2; margin-bottom: 1.2rem; color: var(--accent);">{i_title}</h2>
-              <p style="font-size: 1.6rem; line-height: 1.6; color: #e2e8f0;">{clean_desc}</p>
+              <h2 style="font-size: 4rem; line-height: 1.15; margin-bottom: 1.5rem; color: var(--accent);">{i_title}</h2>
+              <p style="font-size: 1.85rem; line-height: 1.65; color: #f1f5f9;">{clean_desc}</p>
             </div>
           </div>
         </div>
@@ -205,6 +206,7 @@ def parse_generic_rss_slide(title, rss_url, duration, theme):
     except Exception as e:
         print(f"Warning: Failed custom RSS ({rss_url}): {e}")
         return ""
+
 # ----------------- 4. CUSTOM ANNOUNCEMENTS -----------------
 
 def load_user_announcements_and_feeds():
@@ -221,7 +223,7 @@ def load_user_announcements_and_feeds():
         return slides
 
     today_str = date.today().strftime("%Y-%m-%d")
-    print(f"Loaded {len(entries)} items from {ANNOUNCEMENTS_FILE}. Today's check date: {today_str}")
+    print(f"Loaded {len(entries)} items from {ANNOUNCEMENTS_FILE}. Today: {today_str}")
 
     for idx, item in enumerate(entries):
         headline = item.get("headline", "Untitled")
@@ -230,42 +232,59 @@ def load_user_announcements_and_feeds():
         theme = item.get("theme", "theme-navy")
         duration = item.get("duration", 15)
         entry_type = item.get("type", "announcement")
+        image_url = item.get("imageUrl", "").strip()
 
-        # Scheduling checks
+        # Date validity checks
         if start_date and start_date > today_str:
-            print(f"  [Item {idx}] Skipped '{headline}': startDate ({start_date}) is in future.")
+            print(f"  [Item {idx}] Skipped '{headline}': Starts {start_date}")
             continue
         if end_date and end_date < today_str:
-            print(f"  [Item {idx}] Skipped '{headline}': endDate ({end_date}) has expired.")
+            print(f"  [Item {idx}] Skipped '{headline}': Expired {end_date}")
             continue
 
         if entry_type == "announcement":
             details = item.get("details", "")
             badge = "Staff Celebration" if theme == "theme-gold" else "Announcement"
 
-            slides.append(f"""
-            <div class="slide {theme}" data-title="Special Announcement" data-duration="{duration}">
-              <div class="hero-layout">
-                <div class="hero-content">
-                  <span class="hero-tag">{badge}</span>
-                  <h2 style="font-size: 3.2rem;">{headline}</h2>
-                  <p style="font-size: 1.5rem; line-height: 1.6;">{details}</p>
+            if image_url:
+                slides.append(f"""
+                <div class="slide {theme}" data-title="Special Announcement" data-duration="{duration}">
+                  <div class="hero-layout">
+                    <div class="hero-media-layout">
+                      <img src="{image_url}" alt="{headline}">
+                      <div class="hero-media-content">
+                        <span class="hero-tag">{badge}</span>
+                        <h2 style="font-size: 3rem; line-height: 1.2; margin-bottom: 1.2rem;">{headline}</h2>
+                        <p style="font-size: 1.6rem; line-height: 1.6; color: #cbd5e1;">{details}</p>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
-            """)
+                """)
+            else:
+                slides.append(f"""
+                <div class="slide {theme}" data-title="Special Announcement" data-duration="{duration}">
+                  <div class="hero-layout">
+                    <div class="hero-content" style="max-width: 100%;">
+                      <span class="hero-tag">{badge}</span>
+                      <h2 style="font-size: 3.8rem; line-height: 1.2; margin-bottom: 1.5rem;">{headline}</h2>
+                      <p style="font-size: 1.85rem; line-height: 1.6; color: #e2e8f0;">{details}</p>
+                    </div>
+                  </div>
+                </div>
+                """)
             print(f"  [Item {idx}] Added Announcement slide: '{headline}'")
 
         elif entry_type == "rss":
             rss_url = item.get("rssUrl")
-            print(f"  [Item {idx}] Parsing RSS slide: '{headline}' -> {rss_url}")
+            print(f"  [Item {idx}] Parsing RSS: '{headline}' -> {rss_url}")
             if rss_url:
                 slide = parse_generic_rss_slide(headline, rss_url, duration, theme)
                 if slide:
                     slides.append(slide)
                     print(f"  [Item {idx}] Added RSS slide: '{headline}'")
                 else:
-                    print(f"  [Item {idx}] RSS failed to parse items for '{headline}'")
+                    print(f"  [Item {idx}] Failed to parse RSS items.")
 
     return slides
 
@@ -294,7 +313,7 @@ def main():
         </div>
         """)
 
-    # 4. District Holidays / Notices (only if any exist)
+    # 4. District Holidays / Closures
     if holidays:
         slides_html.append(f"""
         <div class="slide" data-title="Upcoming District Notices" data-duration="20">
@@ -316,12 +335,11 @@ def main():
         </div>
         """)
 
-    # Ensure strictly slide 0 has the active class
+    # Guarantee ONLY slide 0 starts active
     cleaned_slides = [s.replace('class="slide active', 'class="slide') for s in slides_html]
     cleaned_slides[0] = cleaned_slides[0].replace('class="slide', 'class="slide active', 1)
     slides_html = cleaned_slides
 
-    # Read template and inject slides
     with open("template_display.html", "r", encoding="utf-8") as f:
         template = f.read()
 

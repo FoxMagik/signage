@@ -2,172 +2,214 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta http-equiv="refresh" content="900"> <!-- Soft pull every 15m -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>District Digital Signage</title>
   <style>
     :root {
       --bg: #0b0f19;
-      --card-bg: #151e32;
-      --text: #f8fafc;
-      --muted: #94a3b8;
+      --card-bg: #1e293b;
       --accent: #38bdf8;
       --gold: #f59e0b;
-      --border: #1e293b;
+      --teal: #2dd4bf;
+      --text: #f8fafc;
+      --muted: #94a3b8;
+      --border: #334155;
     }
+
     * { box-sizing: border-box; margin: 0; padding: 0; }
+
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      background: var(--bg);
+      background-color: var(--bg);
       color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      overflow: hidden;
       width: 100vw;
       height: 100vh;
-      overflow: hidden;
       display: flex;
       flex-direction: column;
     }
-    header {
-      height: 10vh;
-      padding: 0 3rem;
-      border-bottom: 2px solid var(--accent);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: rgba(15, 23, 42, 0.7);
-    }
-    header h1 { font-size: 2.2rem; font-weight: 700; color: #fff; }
-    #clock { font-size: 1.5rem; color: var(--accent); font-weight: 600; }
 
-    main {
-      height: 85vh;
-      padding: 2.5rem 3rem;
-      position: relative;
+    /* Top Live Bar */
+    header {
+      height: 7vh;
+      background: #0f172a;
+      border-bottom: 2px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 3rem;
     }
+
+    .brand-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      color: var(--accent);
+      text-transform: uppercase;
+    }
+
+    .live-clock {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: var(--text);
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* Main Viewport Container */
+    #slide-viewport {
+      flex: 1;
+      position: relative;
+      width: 100%;
+      height: 88vh;
+      overflow: hidden;
+    }
+
+    /* Slide Defaults & Transitions */
     .slide {
       position: absolute;
-      top: 2.5rem;
-      left: 3rem;
-      right: 3rem;
-      bottom: 2.5rem;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
       opacity: 0;
       visibility: hidden;
       transition: opacity 0.8s ease-in-out, visibility 0.8s;
+      padding: 3rem;
       display: flex;
       flex-direction: column;
-      gap: 1.5rem;
+      justify-content: center;
     }
+
     .slide.active {
       opacity: 1;
       visibility: visible;
+      z-index: 10;
     }
 
-    /* Grid Layout for Menus & Feeds */
+    /* Layout 1: Multi-Card Grids (Menus, Weather, RSS) */
     .grid-container {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
-      gap: 1.5rem;
-      height: 100%;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 2rem;
+      width: 100%;
+      max-height: 100%;
     }
+
     .card {
       background: var(--card-bg);
       border: 1px solid var(--border);
-      border-left: 6px solid var(--accent);
+      border-left: 8px solid var(--accent);
       border-radius: 12px;
-      padding: 1.5rem;
+      padding: 1.8rem;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.4);
       display: flex;
       flex-direction: column;
-      gap: 0.6rem;
     }
-    .card.notice { border-left-color: var(--gold); }
-    .card h2 { font-size: 1.4rem; color: #fff; }
-    .meta { font-size: 1rem; color: var(--accent); font-weight: 600; }
-    .card.notice .meta { color: var(--gold); }
 
-    .menu-items {
-      list-style-type: none;
-      display: flex;
-      flex-direction: column;
-      gap: 0.4rem;
-      margin-top: 0.5rem;
-    }
-    .menu-items li {
-      font-size: 1.05rem;
-      color: #cbd5e1;
-      padding-left: 0.8rem;
-      border-left: 2px solid rgba(255, 255, 255, 0.15);
-    }
-    .menu-items li.special-item {
-      border-left-color: var(--accent);
-    }
-    .menu-items li strong { color: var(--accent); margin-right: 0.35rem; }
-
-    /* Single Focus Slides (NASA, Announcement, Word of Day) */
-    .hero-layout {
-      height: 100%;
-      background: var(--card-bg);
-      border-radius: 16px;
-      padding: 2.5rem;
-      display: flex;
-      gap: 2.5rem;
-      align-items: center;
-    }
-    .hero-img {
-      max-width: 50%;
-      max-height: 100%;
-      border-radius: 12px;
-      object-fit: cover;
-    }
-    .hero-content {
-      display: flex;
-      flex-direction: column;
-      gap: 1.2rem;
-    }
-    .hero-tag {
-      align-self: flex-start;
-      background: rgba(56, 189, 248, 0.15);
-      color: var(--accent);
-      padding: 0.4rem 1rem;
-      border-radius: 20px;
+    .card .meta {
+      font-size: 1rem;
       font-weight: 700;
       text-transform: uppercase;
-      font-size: 0.85rem;
+      color: var(--accent);
+      margin-bottom: 0.4rem;
+      letter-spacing: 0.05em;
     }
-    .hero-content h2 { font-size: 2.8rem; line-height: 1.2; }
-    .hero-content p { font-size: 1.3rem; color: #cbd5e1; line-height: 1.6; }
 
-    /* Navy Theme */
+    .card h2 {
+      font-size: 1.6rem;
+      color: #fff;
+      line-height: 1.3;
+      margin-bottom: 0.8rem;
+    }
+
+    .menu-items {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      color: #e2e8f0;
+      font-size: 1.15rem;
+    }
+
+    .menu-items li {
+      line-height: 1.4;
+    }
+
+    .menu-items li.special-item {
+      color: var(--accent);
+    }
+
+    /* Layout 2: Single Hero Notice (Announcements, Celebrations) */
+    .hero-layout {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-left: 12px solid var(--accent);
+      border-radius: 16px;
+      padding: 4rem;
+      box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+    }
+
+    .hero-content {
+      max-width: 90%;
+    }
+
+    .hero-tag {
+      display: inline-block;
+      background: rgba(56, 189, 248, 0.2);
+      color: var(--accent);
+      padding: 0.4rem 1rem;
+      border-radius: 6px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 1.5rem;
+      font-size: 1.1rem;
+    }
+
+    .hero-content h2 {
+      line-height: 1.2;
+      margin-bottom: 1.2rem;
+      color: #fff;
+    }
+
+    /* Background Themes */
     .slide.theme-navy .hero-layout {
       background: #1e293b;
-      border-left: 10px solid #38bdf8;
+      border-left-color: var(--accent);
     }
 
-    /* Gold / Birthday Theme */
     .slide.theme-gold .hero-layout {
       background: linear-gradient(145deg, #1e1b4b, #311042);
-      border-left: 10px solid #f59e0b;
+      border-left-color: var(--gold);
     }
     .slide.theme-gold .hero-tag {
       background: rgba(245, 158, 11, 0.2);
-      color: #fbbf24;
+      color: var(--gold);
     }
 
-    /* Teal Highlight Theme */
     .slide.theme-teal .hero-layout {
       background: linear-gradient(145deg, #0f2b38, #064e3b);
-      border-left: 10px solid #2dd4bf;
+      border-left-color: var(--teal);
     }
     .slide.theme-teal .hero-tag {
       background: rgba(45, 212, 191, 0.2);
-      color: #2dd4bf;
+      color: var(--teal);
     }
 
+    /* Footer Status Bar */
     footer {
       height: 5vh;
       background: #070a10;
+      border-top: 1px solid var(--border);
       display: flex;
       align-items: center;
       padding: 0 3rem;
       color: var(--muted);
-      font-size: 0.9rem;
+      font-size: 0.95rem;
       justify-content: space-between;
     }
   </style>
@@ -175,80 +217,180 @@
 <body>
 
   <header>
-    <h1 id="slide-title">Ascension Signage Network</h1>
-    <div id="clock">--:-- --</div>
+    <div class="brand-title" id="display-channel-title">Ascension Signage Network</div>
+    <div class="live-clock" id="clock">12:00 PM</div>
   </header>
 
   <main id="slide-viewport">
-    <!-- Sample 1: Slate / Navy Theme -->
-<div class="slide active theme-navy" data-title="Tech Department Notice" data-duration="15">
-  <div class="hero-layout">
-    <div class="hero-content">
-      <span class="hero-tag">System Maintenance</span>
-      <h2>Network Maintenance Window</h2>
-      <p>Core switch updates scheduled this Friday starting at 5:00 PM. Access to local file shares and printing may be intermittent.</p>
-    </div>
-  </div>
-</div>
 
-<!-- Sample 2: Gold / Birthday Theme -->
-<div class="slide theme-gold" data-title="Staff Celebrations" data-duration="15">
-  <div class="hero-layout">
-    <div class="hero-content">
-      <span class="hero-tag">Happy Birthday!</span>
-      <h2>Celebrating Mrs. Robinson!</h2>
-      <p>Wishing a very happy birthday to Mrs. Robinson from the entire 3rd grade team and Duplessis primary staff!</p>
-    </div>
-  </div>
-</div>
+        <div class="slide active" data-title="Local Weather & Forecast" data-duration="18">
+          <div class="grid-container">
+            
+            <div class="card" style="border-left-color: #38bdf8;">
+              <div class="meta">Today</div>
+              <h2 style="font-size: 2.2rem; margin: 0.3rem 0;">81&deg;F</h2>
+              <div style="font-size: 1.1rem; color: #fff; font-weight: 600;">Mostly Cloudy</div>
+              <p style="margin-top: 0.5rem; color: #94a3b8; font-size: 0.95rem; line-height: 1.4;">Mostly cloudy. High near 81, with temperatures falling to around 79 in the afternoon. East wind 5 to 10 mph....</p>
+            </div>
+            
+            <div class="card" style="border-left-color: #38bdf8;">
+              <div class="meta">Tonight</div>
+              <h2 style="font-size: 2.2rem; margin: 0.3rem 0;">67&deg;F</h2>
+              <div style="font-size: 1.1rem; color: #fff; font-weight: 600;">Mostly Cloudy</div>
+              <p style="margin-top: 0.5rem; color: #94a3b8; font-size: 0.95rem; line-height: 1.4;">Mostly cloudy, with a low around 67. East wind 0 to 5 mph....</p>
+            </div>
+            
+            <div class="card" style="border-left-color: #38bdf8;">
+              <div class="meta">Saturday</div>
+              <h2 style="font-size: 2.2rem; margin: 0.3rem 0;">84&deg;F</h2>
+              <div style="font-size: 1.1rem; color: #fff; font-weight: 600;">Mostly Sunny then Chance Showers And Thunderstorms</div>
+              <p style="margin-top: 0.5rem; color: #94a3b8; font-size: 0.95rem; line-height: 1.4;">A chance of showers and thunderstorms between 1pm and 3pm, then showers and thunderstorms likely between 3pm and 5pm, then a chanc...</p>
+            </div>
+            
+          </div>
+        </div>
+        
 
-<!-- Sample 3: Teal Highlight Theme -->
-<div class="slide theme-teal" data-title="School Reminders" data-duration="15">
-  <div class="hero-layout">
-    <div class="hero-content">
-      <span class="hero-tag">Campus Reminder</span>
-      <h2>Early Dismissal Friday</h2>
-      <p>Students will be dismissed at 12:30 PM for staff professional development. Extended day programs will operate on adjusted schedules.</p>
-    </div>
-  </div>
-</div>
+            <div class="slide theme-teal" data-title="Special Announcement" data-duration="15">
+              <div class="hero-layout">
+                <div class="hero-content">
+                  <span class="hero-tag">Announcement</span>
+                  <h2 style="font-size: 3.2rem;">Go Home, Zach!</h2>
+                  <p style="font-size: 1.5rem; line-height: 1.6;">If only Zach would go home...</p>
+                </div>
+              </div>
+            </div>
+            
+
+        <div class="slide theme-navy" data-title="NASA Pic" data-duration="15">
+          <div class="grid-container">
+            
+            <div class="card">
+              <h2>NASA's Hubble Marks Way for Roman Space Telescope</h2>
+              <p style="margin-top:0.4rem; color:#cbd5e1; font-size:1rem;">A sinuous spiral galaxy (center) appears in the same field of view as a vivid gravitational lens (right corner) in this Hubble image.</p>
+            </div>
+            
+            <div class="card">
+              <h2>Webb Sees Turbulent Star Nursery</h2>
+              <p style="margin-top:0.4rem; color:#cbd5e1; font-size:1rem;">In this Picture of the Month from the NASA/ESA James Webb Space Telescope, we visit a turbulent cauldron of star formation to see what is br...</p>
+            </div>
+            
+            <div class="card">
+              <h2>NASA's Neo Surveyor Sunshade</h2>
+              <p style="margin-top:0.4rem; color:#cbd5e1; font-size:1rem;">The large sunshade of NASA’s Near-Earth Object Surveyor mission is inspected by a technician at BAE Systems Space &amp; Mission Systems in B...</p>
+            </div>
+            
+            <div class="card">
+              <h2>NASA's X-59 Aircraft and Test Pilot</h2>
+              <p style="margin-top:0.4rem; color:#cbd5e1; font-size:1rem;">NASA test pilot Mike Lippert poses for a photo ahead of his first time flying the agency's X-59 quiet supersonic research aircraft on Oct. 2...</p>
+            </div>
+            
+          </div>
+        </div>
+        
+
+        <div class="slide" data-title="District Dining" data-duration="25">
+          <div class="grid-container">
+            
+            <div class="card">
+              <div class="meta">Fri, Oct 30</div>
+              <h2>Hamburger on Bun</h2>
+              <ul class="menu-items"><li>Oven Fries</li><li>Green Beans</li><li>Lettuce Salad</li><li>Peaches</li><li class="special-item"><strong>Sandwich:</strong> Spicy Chicken Patty on Bun</li><li class="special-item"><strong>Breakfast:</strong> Buffet</li></ul>
+            </div>
+            
+          </div>
+        </div>
+        
+
+        <div class="slide" data-title="Upcoming District Notices" data-duration="20">
+          <div class="grid-container">
+            
+            <div class="card notice">
+              <div class="meta">Tue, Nov 03</div>
+              <h2>Election Day</h2>
+              <p style="margin-top:0.5rem; color:#e2e8f0; font-size:1.1rem;">School Holiday / District Closed</p>
+            </div>
+            
+            <div class="card notice">
+              <div class="meta">Mon, Nov 23</div>
+              <h2>Thanksgiving Break</h2>
+              <p style="margin-top:0.5rem; color:#e2e8f0; font-size:1.1rem;">School Holiday / District Closed</p>
+            </div>
+            
+            <div class="card notice">
+              <div class="meta">Mon, Dec 21</div>
+              <h2>Christmas/Winter Break</h2>
+              <p style="margin-top:0.5rem; color:#e2e8f0; font-size:1.1rem;">School Holiday / District Closed</p>
+            </div>
+            
+            <div class="card notice">
+              <div class="meta">Mon, Jan 18</div>
+              <h2>Dr. Martin Luther King, Jr. Holiday</h2>
+              <p style="margin-top:0.5rem; color:#e2e8f0; font-size:1.1rem;">School Holiday / District Closed</p>
+            </div>
+            
+            <div class="card notice">
+              <div class="meta">Mon, Feb 08</div>
+              <h2>Mardi Gras Holidays</h2>
+              <p style="margin-top:0.5rem; color:#e2e8f0; font-size:1.1rem;">School Holiday / District Closed</p>
+            </div>
+            
+          </div>
+        </div>
+        
   </main>
 
   <footer>
-    <span id="footer-left">Ascension Public Schools</span>
-    <span id="footer-sync">Sync: Oct 30, 01:31 PM</span>
+    <div id="status-title">Active Feed Loop</div>
+    <div id="status-sync">Sync: Oct 30, 01:36 PM</div>
   </footer>
 
   <script>
-    // Live Clock
+    // Live Clock Display
     function updateClock() {
       const now = new Date();
-      document.getElementById('clock').textContent = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+      document.getElementById('clock').textContent = now.toLocaleTimeString([], { 
+        hour: 'numeric', 
+        minute: '2-digit' 
+      });
     }
     setInterval(updateClock, 1000);
     updateClock();
 
     // Slide Carousel Engine
-    const slides = Array.from(document.querySelectorAll('.slide'));
+    const slides = document.querySelectorAll('.slide');
     let currentIndex = 0;
+    let timer = null;
 
-    function playSlides() {
+    function showSlide(index) {
       if (!slides.length) return;
 
       slides.forEach(s => s.classList.remove('active'));
-      const activeSlide = slides[currentIndex];
+      const activeSlide = slides[index];
       activeSlide.classList.add('active');
 
-      const title = activeSlide.getAttribute('data-title') || 'Ascension Signage Network';
-      document.getElementById('slide-title').textContent = title;
+      // Update Channel Title from slide attribute
+      const title = activeSlide.getAttribute('data-title') || 'Ascension Signage';
+      document.getElementById('display-channel-title').textContent = title;
 
-      const duration = parseInt(activeSlide.getAttribute('data-duration') || '15', 10) * 1000;
+      // Extract duration or default to 15 seconds
+      const durationSec = parseInt(activeSlide.getAttribute('data-duration'), 10) || 15;
 
-      currentIndex = (currentIndex + 1) % slides.length;
-      setTimeout(playSlides, duration);
+      clearTimeout(timer);
+      timer = setTimeout(() => {
+        currentIndex = (currentIndex + 1) % slides.length;
+        showSlide(currentIndex);
+      }, durationSec * 1000);
     }
 
-    playSlides();
+    if (slides.length > 0) {
+      showSlide(0);
+    }
+
+    // Refresh display page every 15 minutes to pick up fresh GitHub builds
+    setTimeout(() => {
+      window.location.reload();
+    }, 15 * 60 * 1000);
   </script>
 </body>
 </html>

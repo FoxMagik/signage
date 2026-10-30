@@ -8,15 +8,5 @@
     "duration": 15,
     "startDate": "2026-10-29",
     "endDate": ""
-  },
-  {
-    "type": "rss",
-    "headline": "NASA Pic",
-    "details": "",
-    "rssUrl": "https://www.nasa.gov/rss/dyn/lg_image_of_the_day.rss",
-    "theme": "theme-navy",
-    "duration": 15,
-    "startDate": "2026-10-30",
-    "endDate": ""
   }
 ]

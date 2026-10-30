@@ -6,7 +6,7 @@
   <title>Ascension Signage Admin</title>
   <style>
     :root {
-      --bg: #0f172a;
+      --bg: #0b0f19;
       --card-bg: #1e293b;
       --accent: #38bdf8;
       --text: #f8fafc;
@@ -18,154 +18,224 @@
       background: var(--bg);
       color: var(--text);
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      padding: 2.5rem;
-      max-width: 950px;
-      margin: 0 auto;
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      padding: 1rem 1.5rem;
     }
-    h1 { color: var(--accent); margin-bottom: 0.5rem; }
-    p.sub { color: var(--muted); margin-bottom: 2rem; }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.75rem;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 0.5rem;
+    }
+    h1 { font-size: 1.3rem; color: var(--accent); }
+    .status-badge { font-size: 0.85rem; color: var(--muted); }
+
+    /* Compact 2-Column Dashboard */
+    .dashboard {
+      display: grid;
+      grid-template-columns: 1.25fr 1fr;
+      gap: 1rem;
+      flex: 1;
+      height: calc(100vh - 4.5rem);
+      overflow: hidden;
+    }
+
     .panel {
       background: var(--card-bg);
       border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 2rem;
-      margin-bottom: 2rem;
-    }
-    .form-group { margin-bottom: 1.25rem; }
-    label { display: block; font-weight: 600; margin-bottom: 0.4rem; color: #cbd5e1; }
-    input, select, textarea {
-      width: 100%;
-      padding: 0.75rem;
-      background: #0b0f19;
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      color: #fff;
-      font-size: 1rem;
-    }
-    textarea { height: 100px; resize: vertical; }
-    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
-    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; }
-    button {
-      background: var(--accent);
-      color: #0b0f19;
-      border: none;
-      padding: 0.85rem 1.75rem;
-      font-size: 1rem;
-      font-weight: 700;
-      border-radius: 6px;
-      cursor: pointer;
-      transition: opacity 0.2s;
-    }
-    button:hover { opacity: 0.9; }
-    .item-list { list-style: none; margin-top: 1rem; }
-    .item-card {
-      background: #0b0f19;
-      border: 1px solid var(--border);
-      padding: 1rem 1.5rem;
       border-radius: 8px;
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .panel-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #fff;
       margin-bottom: 0.75rem;
       display: flex;
       justify-content: space-between;
       align-items: center;
     }
+
+    /* Form Styles */
+    .form-group { margin-bottom: 0.65rem; }
+    label { display: block; font-size: 0.8rem; font-weight: 600; color: #cbd5e1; margin-bottom: 0.2rem; }
+    input, select, textarea {
+      width: 100%;
+      padding: 0.5rem 0.65rem;
+      background: #0b0f19;
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      color: #fff;
+      font-size: 0.85rem;
+    }
+    textarea { height: 60px; resize: none; }
+
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.5rem; }
+
+    button {
+      background: var(--accent);
+      color: #0b0f19;
+      border: none;
+      padding: 0.55rem 1rem;
+      font-size: 0.85rem;
+      font-weight: 700;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+    button:hover { opacity: 0.9; }
+
+    /* Collapsible Auth drawer */
+    details.auth-drawer {
+      background: #0b0f19;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 0.4rem 0.75rem;
+      margin-bottom: 0.75rem;
+      font-size: 0.8rem;
+    }
+    details summary { cursor: pointer; color: var(--accent); font-weight: 600; outline: none; }
+    .auth-fields { margin-top: 0.5rem; display: grid; grid-template-columns: 1fr 1fr auto; gap: 0.5rem; align-items: end; }
+
+    /* Scheduled Items Scrollable List */
+    .item-list-container {
+      flex: 1;
+      overflow-y: auto;
+      padding-right: 0.25rem;
+    }
+    .item-card {
+      background: #0b0f19;
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--accent);
+      padding: 0.65rem 0.75rem;
+      border-radius: 5px;
+      margin-bottom: 0.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.85rem;
+    }
+    .item-card.theme-gold { border-left-color: #f59e0b; }
+    .item-card.theme-teal { border-left-color: #2dd4bf; }
+    .item-info strong { display: block; color: #fff; margin-bottom: 0.15rem; }
+    .item-meta { color: var(--muted); font-size: 0.75rem; }
     .btn-delete {
       background: #ef4444;
       color: #fff;
-      padding: 0.4rem 0.8rem;
-      font-size: 0.85rem;
+      padding: 0.3rem 0.6rem;
+      font-size: 0.75rem;
+      border-radius: 4px;
     }
   </style>
 </head>
 <body>
 
-  <h1>Signage Control Panel</h1>
-  <p class="sub">Publish custom slides, flyers, schedules, and background graphics.</p>
+  <header>
+    <h1>Ascension Signage Control</h1>
+    <div class="status-badge" id="headerStatus">Ready</div>
+  </header>
 
-  <!-- Auth Panel -->
-  <div class="panel">
-    <h3>Access Settings</h3>
-    <p style="color:var(--muted); font-size:0.9rem; margin-bottom:1rem;">Stored securely in this browser session.</p>
-    <div class="grid-2">
-      <div class="form-group">
-        <label>Personal Access Token (or Proxy PIN)</label>
-        <input type="password" id="authKey" placeholder="Paste GitHub PAT or District PIN">
+  <!-- Collapsible Auth Panel -->
+  <details class="auth-drawer" id="authDetails">
+    <summary>🔑 Cloudflare Proxy / Access Settings</summary>
+    <div class="auth-fields">
+      <div>
+        <label>Proxy PIN / Token</label>
+        <input type="password" id="authKey" placeholder="Enter PIN">
       </div>
-      <div class="form-group">
-        <label>Optional Proxy URL (leave blank if using PAT)</label>
-        <input type="url" id="proxyUrl" placeholder="https://worker.your-domain.workers.dev">
+      <div>
+        <label>Cloudflare Worker URL</label>
+        <input type="url" id="proxyUrl" placeholder="https://....workers.dev">
+      </div>
+      <button type="button" onclick="saveAuth()">Save</button>
+    </div>
+  </details>
+
+  <div class="dashboard">
+    <!-- LEFT PANEL: Creation Form -->
+    <div class="panel">
+      <div class="panel-title">Add New Slide</div>
+      <form id="slideForm">
+        <div class="grid-2">
+          <div class="form-group">
+            <label>Format</label>
+            <select id="slideType" onchange="toggleFormFields()">
+              <option value="announcement">Standard Notice (Text + Side Photo)</option>
+              <option value="full-image">Full-Screen Poster (Image only)</option>
+              <option value="bg-banner">Banner (Text over BG Image)</option>
+              <option value="rss">RSS News Feed</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Duration (Seconds)</label>
+            <input type="number" id="duration" value="15" min="5" max="120">
+          </div>
+        </div>
+
+        <div class="form-group" id="groupHeadline">
+          <label id="labelHeadline">Headline / Slide Title</label>
+          <input type="text" id="headline" placeholder="e.g. Teacher Appreciation Week" required>
+        </div>
+
+        <div class="form-group" id="groupDetails">
+          <label>Details</label>
+          <textarea id="details" placeholder="Slide message details..."></textarea>
+        </div>
+
+        <div class="form-group" id="groupImage">
+          <label id="labelImage">Side Image URL (Optional)</label>
+          <input type="url" id="imageUrl" placeholder="https://example.com/photo.jpg">
+        </div>
+
+        <div class="form-group" id="groupRss" style="display:none;">
+          <label>RSS Feed URL</label>
+          <input type="url" id="rssUrl" placeholder="https://example.com/feed.xml">
+        </div>
+
+        <div class="grid-3">
+          <div class="form-group" id="groupTheme">
+            <label>Theme</label>
+            <select id="theme">
+              <option value="theme-navy">Navy</option>
+              <option value="theme-gold">Gold</option>
+              <option value="theme-teal">Teal</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Start Date</label>
+            <input type="date" id="startDate">
+          </div>
+          <div class="form-group">
+            <label>End Date</label>
+            <input type="date" id="endDate">
+          </div>
+        </div>
+
+        <button type="submit" id="btnSubmit" style="width:100%; margin-top:0.35rem;">Publish to Display</button>
+      </form>
+    </div>
+
+    <!-- RIGHT PANEL: Scheduled Items -->
+    <div class="panel">
+      <div class="panel-title">
+        <span>Active Loop Slides</span>
+        <button onclick="loadFeed()" style="padding:0.25rem 0.6rem; font-size:0.75rem;">Refresh</button>
+      </div>
+      <div class="item-list-container">
+        <div id="slideList">Loading...</div>
       </div>
     </div>
-    <button type="button" onclick="saveAuth()" style="padding:0.5rem 1rem; font-size:0.9rem;">Save Credentials</button>
-  </div>
-
-  <!-- Create Slide Panel -->
-  <div class="panel">
-    <h3>Create New Slide</h3>
-    <form id="slideForm">
-      
-      <div class="grid-2">
-        <div class="form-group">
-          <label>Slide Format</label>
-          <select id="slideType" onchange="toggleFormFields()">
-            <option value="announcement">Standard Announcement (Text + Optional Side Photo)</option>
-            <option value="full-image">Full Image / Poster (Graphic fills screen)</option>
-            <option value="bg-banner">Banner (Text over Custom Background Image)</option>
-            <option value="rss">Live RSS News Feed</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>Display Duration (Seconds)</label>
-          <input type="number" id="duration" value="15" min="5" max="120">
-        </div>
-      </div>
-
-      <div class="form-group" id="groupHeadline">
-        <label id="labelHeadline">Headline / Slide Title</label>
-        <input type="text" id="headline" placeholder="e.g. Teacher Appreciation Week">
-      </div>
-
-      <div class="form-group" id="groupDetails">
-        <label>Details / Body Text</label>
-        <textarea id="details" placeholder="Enter announcement body text..."></textarea>
-      </div>
-
-      <div class="form-group" id="groupImage">
-        <label id="labelImage">Image URL</label>
-        <input type="url" id="imageUrl" placeholder="https://example.com/photo-or-flyer.jpg">
-      </div>
-
-      <div class="form-group" id="groupRss" style="display:none;">
-        <label>RSS Feed URL</label>
-        <input type="url" id="rssUrl" placeholder="https://example.com/feed.xml">
-      </div>
-
-      <div class="grid-3">
-        <div class="form-group" id="groupTheme">
-          <label>Color Theme</label>
-          <select id="theme">
-            <option value="theme-navy">District Navy</option>
-            <option value="theme-gold">Celebration Gold</option>
-            <option value="theme-teal">Teal Highlight</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>Start Date</label>
-          <input type="date" id="startDate">
-        </div>
-        <div class="form-group">
-          <label>End Date</label>
-          <input type="date" id="endDate">
-        </div>
-      </div>
-
-      <button type="submit" id="btnSubmit">Publish Slide</button>
-    </form>
-  </div>
-
-  <!-- Active List Panel -->
-  <div class="panel">
-    <h3>Currently Scheduled Slides</h3>
-    <ul class="item-list" id="slideList">Loading scheduled items...</ul>
   </div>
 
   <script>
@@ -176,7 +246,7 @@
     function saveAuth() {
       localStorage.setItem("signage_auth", document.getElementById("authKey").value.trim());
       localStorage.setItem("signage_proxy", document.getElementById("proxyUrl").value.trim());
-      alert("Settings saved!");
+      document.getElementById("authDetails").removeAttribute("open");
       loadFeed();
     }
 
@@ -195,7 +265,7 @@
       grpTheme.style.display = (type === "full-image") ? "none" : "block";
 
       if (type === "full-image") {
-        lblImage.textContent = "Full-Screen Poster Image URL (Required)";
+        lblImage.textContent = "Full Poster Image URL (Required)";
         lblHeadline.textContent = "Slide Title (For Status Bar)";
       } else if (type === "bg-banner") {
         lblImage.textContent = "Background Image URL (Required)";
@@ -207,11 +277,7 @@
     }
 
     async function loadFeed() {
-      const key = localStorage.getItem("signage_auth");
-      if (!key) {
-        document.getElementById("slideList").innerHTML = "<li>Please enter and save your token/PIN above.</li>";
-        return;
-      }
+      const status = document.getElementById("headerStatus");
       try {
         const res = await fetch(`https://api.github.com/repos/${REPO}/contents/announcements.json?t=${Date.now()}`);
         if (!res.ok) throw new Error("Could not fetch announcements.json");
@@ -219,30 +285,31 @@
         fileSha = data.sha;
         currentAnnouncements = JSON.parse(atob(data.content));
         renderList();
+        status.textContent = `Synced (${currentAnnouncements.length} custom slides)`;
       } catch (err) {
-        document.getElementById("slideList").innerHTML = `<li>Error loading list: ${err.message}</li>`;
+        document.getElementById("slideList").innerHTML = `<div style="color:var(--muted); font-size:0.8rem;">Sync notice: ${err.message}</div>`;
       }
     }
 
     function renderList() {
-      const ul = document.getElementById("slideList");
-      ul.innerHTML = "";
+      const container = document.getElementById("slideList");
+      container.innerHTML = "";
       if (!currentAnnouncements.length) {
-        ul.innerHTML = "<li>No active custom slides found.</li>";
+        container.innerHTML = "<div style='color:var(--muted); font-size:0.85rem;'>No custom slides scheduled.</div>";
         return;
       }
 
       currentAnnouncements.forEach((item, idx) => {
-        const li = document.createElement("li");
-        li.className = "item-card";
-        li.innerHTML = `
-          <div>
-            <strong>${item.headline}</strong> 
-            <span style="color:var(--muted); font-size:0.85rem;">(${item.type} | ${item.duration}s | ${item.startDate || 'Now'} to ${item.endDate || 'Always'})</span>
+        const div = document.createElement("div");
+        div.className = `item-card ${item.theme || ''}`;
+        div.innerHTML = `
+          <div class="item-info">
+            <strong>${item.headline}</strong>
+            <span class="item-meta">${item.type} • ${item.duration}s • ${item.startDate || 'Now'} to ${item.endDate || 'Always'}</span>
           </div>
           <button class="btn-delete" onclick="deleteItem(${idx})">Delete</button>
         `;
-        ul.appendChild(li);
+        container.appendChild(div);
       });
     }
 
@@ -262,55 +329,65 @@
       };
 
       currentAnnouncements.push(newItem);
-      await commitChanges("Add new slide via Admin");
+      await commitChanges("Add slide");
     });
 
     async function deleteItem(idx) {
-      if (!confirm("Delete this slide?")) return;
+      if (!confirm("Remove this slide?")) return;
       currentAnnouncements.splice(idx, 1);
-      await commitChanges("Delete slide via Admin");
+      await commitChanges("Remove slide");
     }
 
-    async function commitChanges(msg) {
+    async function commitChanges(actionName) {
       const auth = localStorage.getItem("signage_auth");
       const proxy = localStorage.getItem("signage_proxy");
+      const status = document.getElementById("headerStatus");
+      status.textContent = "Publishing...";
+
       const payload = {
-        message: `${msg} [skip ci]`,
+        message: `${actionName} via admin [skip ci]`,
         content: btoa(unescape(encodeURIComponent(JSON.stringify(currentAnnouncements, null, 2)))),
         sha: fileSha
       };
 
-      let resp;
-      if (proxy) {
-        resp = await fetch(proxy, {
-          method: "POST",
-          headers: { "Content-Type": "application/json", "X-Admin-Pin": auth },
-          body: JSON.stringify(payload)
-        });
-      } else {
-        resp = await fetch(`https://api.github.com/repos/${REPO}/contents/announcements.json`, {
-          method: "PUT",
-          headers: {
-            "Authorization": `token ${auth}`,
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify(payload)
-        });
-      }
+      try {
+        let resp;
+        if (proxy) {
+          resp = await fetch(proxy, {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "X-Admin-Pin": auth },
+            body: JSON.stringify(payload)
+          });
+        } else {
+          resp = await fetch(`https://api.github.com/repos/${REPO}/contents/announcements.json`, {
+            method: "PUT",
+            headers: { "Authorization": `token ${auth}`, "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+          });
+        }
 
-      if (resp.ok) {
-        alert("Published! Signage will update shortly.");
-        document.getElementById("slideForm").reset();
-        toggleFormFields();
-        loadFeed();
-      } else {
-        alert("Failed to commit. Verify credentials.");
+        if (resp.ok) {
+          status.textContent = "Saved to GitHub!";
+          document.getElementById("headline").value = "";
+          document.getElementById("details").value = "";
+          document.getElementById("imageUrl").value = "";
+          document.getElementById("rssUrl").value = "";
+          loadFeed();
+        } else {
+          const errData = await resp.text();
+          alert("Publish failed: " + errData);
+          status.textContent = "Error saving";
+        }
+      } catch (err) {
+        alert("Network error: " + err.message);
+        status.textContent = "Network error";
       }
     }
 
-    // Initialize
+    // Init
     document.getElementById("authKey").value = localStorage.getItem("signage_auth") || "";
     document.getElementById("proxyUrl").value = localStorage.getItem("signage_proxy") || "";
+    toggleFormFields();
     loadFeed();
   </script>
 </body>

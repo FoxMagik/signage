@@ -2,11 +2,11 @@ name: Update Calendar Feed
 
 on:
   schedule:
-    - cron: '0 * * * *'  # Runs every hour for menus/news
-  workflow_dispatch:       # Allows manual "Run workflow" button
+    - cron: '0 * * * *'
+  workflow_dispatch:
   push:
     paths:
-      - 'announcements.json'  # Triggers immediately when you post from admin.html
+      - 'announcements.json'
       - 'template_display.html'
       - 'build.py'
 
@@ -21,6 +21,8 @@ jobs:
     steps:
       - name: Check out repo
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Full history so pulls/rebases succeed
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -35,17 +37,19 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           
-          # Force add all generated files
+          # Pull latest remote changes first in case admin.html just wrote a commit
+          git pull --rebase origin main || true
+          
+          # Force track all generated targets
           git add -f index.html display.html announcements.json
           
-          # Print status so we can see what Git sees in the runner log
           git status
           
-          # Commit and push if modified
-          if [ -n "$(git status --porcelain)" ]; then
-            git commit -m "Auto-update signage feed [skip ci]"
-            git push
-            echo "Changes pushed successfully."
+          # Only commit if actual diffs exist
+          if ! git diff --staged --quiet; then
+            git commit -m "Auto-update signage display [skip ci]"
+            git push origin main
+            echo "Display successfully committed and pushed to main!"
           else
-            echo "No changes detected by Git."
+            echo "No diff detected in files."
           fi

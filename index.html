@@ -37,20 +37,20 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 0 3rem;
+      padding: 0 3.5rem;
     }
 
     .brand-title {
-      font-size: 1.5rem;
-      font-weight: 700;
+      font-size: 1.8rem;
+      font-weight: 800;
       letter-spacing: 0.05em;
       color: var(--accent);
       text-transform: uppercase;
     }
 
     .live-clock {
-      font-size: 1.5rem;
-      font-weight: 600;
+      font-size: 1.8rem;
+      font-weight: 700;
       color: var(--text);
       font-variant-numeric: tabular-nums;
     }
@@ -60,7 +60,7 @@
       flex: 1;
       position: relative;
       width: 100%;
-      height: 88vh;
+      height: 87vh;
       overflow: hidden;
     }
 
@@ -74,7 +74,7 @@
       opacity: 0;
       visibility: hidden;
       transition: opacity 0.8s ease-in-out, visibility 0.8s;
-      padding: 3rem;
+      padding: 2.5rem 3.5rem;
       display: flex;
       flex-direction: column;
       justify-content: center;
@@ -86,11 +86,11 @@
       z-index: 10;
     }
 
-    /* Layout 1: Multi-Card Grids (Menus, Weather, RSS) */
+    /* Multi-Card Grids (Menus, Weather) */
     .grid-container {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-      gap: 2rem;
+      grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+      gap: 2.2rem;
       width: 100%;
       max-height: 100%;
     }
@@ -98,48 +98,45 @@
     .card {
       background: var(--card-bg);
       border: 1px solid var(--border);
-      border-left: 8px solid var(--accent);
-      border-radius: 12px;
-      padding: 1.8rem;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+      border-left: 10px solid var(--accent);
+      border-radius: 14px;
+      padding: 2rem;
+      box-shadow: 0 12px 28px rgba(0,0,0,0.45);
       display: flex;
       flex-direction: column;
     }
 
     .card .meta {
-      font-size: 1rem;
+      font-size: 1.15rem;
       font-weight: 700;
       text-transform: uppercase;
       color: var(--accent);
-      margin-bottom: 0.4rem;
+      margin-bottom: 0.5rem;
       letter-spacing: 0.05em;
     }
 
     .card h2 {
-      font-size: 1.6rem;
+      font-size: 1.85rem;
       color: #fff;
-      line-height: 1.3;
-      margin-bottom: 0.8rem;
+      line-height: 1.25;
+      margin-bottom: 1rem;
     }
 
     .menu-items {
       list-style: none;
       display: flex;
       flex-direction: column;
-      gap: 0.5rem;
+      gap: 0.65rem;
       color: #e2e8f0;
-      font-size: 1.15rem;
-    }
-
-    .menu-items li {
-      line-height: 1.4;
+      font-size: 1.3rem; /* Bumped menu text */
     }
 
     .menu-items li.special-item {
       color: var(--accent);
+      font-weight: 600;
     }
 
-    /* Layout 2: Single Hero Notice (Announcements, Celebrations) */
+    /* Hero Notice (Text Only or Side-by-Side) */
     .hero-layout {
       width: 100%;
       height: 100%;
@@ -147,33 +144,51 @@
       align-items: center;
       background: var(--card-bg);
       border: 1px solid var(--border);
-      border-left: 12px solid var(--accent);
-      border-radius: 16px;
-      padding: 4rem;
-      box-shadow: 0 15px 35px rgba(0,0,0,0.5);
-    }
-
-    .hero-content {
-      max-width: 90%;
+      border-left: 14px solid var(--accent);
+      border-radius: 20px;
+      padding: 3.5rem 4.5rem;
+      box-shadow: 0 16px 40px rgba(0,0,0,0.55);
+      overflow: hidden;
     }
 
     .hero-tag {
       display: inline-block;
       background: rgba(56, 189, 248, 0.2);
       color: var(--accent);
-      padding: 0.4rem 1rem;
-      border-radius: 6px;
-      font-weight: 700;
+      padding: 0.5rem 1.2rem;
+      border-radius: 8px;
+      font-weight: 800;
       text-transform: uppercase;
-      letter-spacing: 0.05em;
+      letter-spacing: 0.06em;
       margin-bottom: 1.5rem;
-      font-size: 1.1rem;
+      font-size: 1.25rem;
     }
 
-    .hero-content h2 {
-      line-height: 1.2;
-      margin-bottom: 1.2rem;
-      color: #fff;
+    /* Picture Hero Layout (NASA & Photo Announcements) */
+    .hero-media-layout {
+      display: flex;
+      gap: 4rem;
+      align-items: center;
+      width: 100%;
+      height: 100%;
+    }
+
+    .hero-media-layout img {
+      max-width: 55%;
+      height: 100%;
+      max-height: 72vh;
+      border-radius: 16px;
+      object-fit: cover;
+      box-shadow: 0 12px 32px rgba(0,0,0,0.6);
+      border: 2px solid rgba(255,255,255,0.1);
+    }
+
+    .hero-media-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      max-height: 100%;
     }
 
     /* Background Themes */
@@ -202,14 +217,14 @@
 
     /* Footer Status Bar */
     footer {
-      height: 5vh;
+      height: 6vh;
       background: #070a10;
       border-top: 1px solid var(--border);
       display: flex;
       align-items: center;
-      padding: 0 3rem;
+      padding: 0 3.5rem;
       color: var(--muted);
-      font-size: 0.95rem;
+      font-size: 1.1rem;
       justify-content: space-between;
     }
   </style>
@@ -228,66 +243,60 @@
             
             <div class="card" style="border-left-color: #38bdf8;">
               <div class="meta">Today</div>
-              <h2 style="font-size: 2.2rem; margin: 0.3rem 0;">81&deg;F</h2>
-              <div style="font-size: 1.1rem; color: #fff; font-weight: 600;">Mostly Cloudy</div>
-              <p style="margin-top: 0.5rem; color: #94a3b8; font-size: 0.95rem; line-height: 1.4;">Mostly cloudy. High near 81, with temperatures falling to around 79 in the afternoon. East wind 5 to 10 mph....</p>
+              <h2 style="font-size: 2.4rem; margin: 0.3rem 0;">81&deg;F</h2>
+              <div style="font-size: 1.25rem; color: #fff; font-weight: 600; margin-bottom: 0.4rem;">Mostly Cloudy</div>
+              <p style="color: #94a3b8; font-size: 1.05rem; line-height: 1.5;">Mostly cloudy. High near 81, with temperatures falling to around 79 in the afternoon. East wind 5 to 10 mph....</p>
             </div>
             
             <div class="card" style="border-left-color: #38bdf8;">
               <div class="meta">Tonight</div>
-              <h2 style="font-size: 2.2rem; margin: 0.3rem 0;">67&deg;F</h2>
-              <div style="font-size: 1.1rem; color: #fff; font-weight: 600;">Mostly Cloudy</div>
-              <p style="margin-top: 0.5rem; color: #94a3b8; font-size: 0.95rem; line-height: 1.4;">Mostly cloudy, with a low around 67. East wind 0 to 5 mph....</p>
+              <h2 style="font-size: 2.4rem; margin: 0.3rem 0;">67&deg;F</h2>
+              <div style="font-size: 1.25rem; color: #fff; font-weight: 600; margin-bottom: 0.4rem;">Mostly Cloudy</div>
+              <p style="color: #94a3b8; font-size: 1.05rem; line-height: 1.5;">Mostly cloudy, with a low around 67. East wind 0 to 5 mph....</p>
             </div>
             
             <div class="card" style="border-left-color: #38bdf8;">
               <div class="meta">Saturday</div>
-              <h2 style="font-size: 2.2rem; margin: 0.3rem 0;">84&deg;F</h2>
-              <div style="font-size: 1.1rem; color: #fff; font-weight: 600;">Mostly Sunny then Chance Showers And Thunderstorms</div>
-              <p style="margin-top: 0.5rem; color: #94a3b8; font-size: 0.95rem; line-height: 1.4;">A chance of showers and thunderstorms between 1pm and 3pm, then showers and thunderstorms likely between 3pm and 5pm, then a chanc...</p>
+              <h2 style="font-size: 2.4rem; margin: 0.3rem 0;">84&deg;F</h2>
+              <div style="font-size: 1.25rem; color: #fff; font-weight: 600; margin-bottom: 0.4rem;">Mostly Sunny then Chance Showers And Thunderstorms</div>
+              <p style="color: #94a3b8; font-size: 1.05rem; line-height: 1.5;">A chance of showers and thunderstorms between 1pm and 3pm, then showers and thunderstorms likely between 3pm and 5pm, then a chance of showers and thu...</p>
             </div>
             
           </div>
         </div>
         
 
-            <div class="slide theme-teal" data-title="Special Announcement" data-duration="15">
-              <div class="hero-layout">
-                <div class="hero-content">
-                  <span class="hero-tag">Announcement</span>
-                  <h2 style="font-size: 3.2rem;">Go Home, Zach!</h2>
-                  <p style="font-size: 1.5rem; line-height: 1.6;">If only Zach would go home...</p>
+                <div class="slide theme-teal" data-title="Special Announcement" data-duration="15">
+                  <div class="hero-layout">
+                    <div class="hero-content" style="max-width: 100%;">
+                      <span class="hero-tag">Announcement</span>
+                      <h2 style="font-size: 3.8rem; line-height: 1.2; margin-bottom: 1.5rem;">Go Home, Zach!</h2>
+                      <p style="font-size: 1.85rem; line-height: 1.6; color: #e2e8f0;">If only Zach would go home...</p>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
-            
+                
 
             <div class="slide theme-navy" data-title="Nasa Pic of the Day" data-duration="15">
-              <div class="hero-layout" style="display: flex; gap: 3rem; align-items: center; padding: 3rem;">
-                <img src="https://www.nasa.gov/wp-content/uploads/2026/10/55606049603-e8822462fe-o.jpg" alt="NASA's Hubble Marks Way for Roman Space Telescope" style="max-width: 48%; max-height: 70vh; border-radius: 12px; object-fit: cover; box-shadow: 0 8px 24px rgba(0,0,0,0.5);">
-                <div class="hero-content" style="flex: 1;">
-                  <span class="hero-tag">Nasa Pic of the Day</span>
-                  <h2 style="font-size: 2.5rem; line-height: 1.2; margin-bottom: 1rem;">NASA's Hubble Marks Way for Roman Space Telescope</h2>
-                  <p style="font-size: 1.3rem; line-height: 1.6; color: #cbd5e1;">A sinuous spiral galaxy (center) appears in the same field of view as a vivid gravitational lens (right corner) in this Hubble image.</p>
+              <div class="hero-layout">
+                <div class="hero-media-layout">
+                  <img src="https://www.nasa.gov/wp-content/uploads/2026/10/55606049603-e8822462fe-o.jpg" alt="NASA's Hubble Marks Way for Roman Space Telescope">
+                  <div class="hero-media-content">
+                    <span class="hero-tag">Nasa Pic of the Day</span>
+                    <h2 style="font-size: 2.8rem; line-height: 1.2; margin-bottom: 1.2rem;">NASA's Hubble Marks Way for Roman Space Telescope</h2>
+                    <p style="font-size: 1.5rem; line-height: 1.6; color: #cbd5e1;">A sinuous spiral galaxy (center) appears in the same field of view as a vivid gravitational lens (right corner) in this Hubble image.</p>
+                  </div>
                 </div>
               </div>
             </div>
             
 
         <div class="slide theme-navy" data-title="Word of the Day" data-duration="15">
-          <div class="hero-layout" style="padding: 4rem;">
-            <div class="hero-content" style="max-width: 900px;">
+          <div class="hero-layout">
+            <div class="hero-content" style="max-width: 100%;">
               <span class="hero-tag">Word of the Day</span>
-              <h2 style="font-size: 3.5rem; line-height: 1.2; margin-bottom: 1.2rem; color: var(--accent);">reticent</h2>
-              <p style="font-size: 1.6rem; line-height: 1.6; color: #e2e8f0;">Merriam-Webster's Word of the Day for October 30, 2026 is:
-    
-  
-  
-  
-    reticent &#149; \RET-uh-sunt\&nbsp; &#149; adjective
-    Someone may be described as reticent if they are feeling or showing reluctance, that is, hesitation or unwillingness to do something. Reticent can also describe someone who is reserved, inclined to be silent or uncommunicative about things.
-
-// T...</p>
+              <h2 style="font-size: 4rem; line-height: 1.15; margin-bottom: 1.5rem; color: var(--accent);">reticent</h2>
+              <p style="font-size: 1.85rem; line-height: 1.65; color: #f1f5f9;">Merriam-Webster's Word of the Day for October 30, 2026 is: reticent &#149; \RET-uh-sunt\&nbsp; &#149; adjective Someone may be described as reticent if they are feeling or showing reluctance, that is, hesitation or unwillingness to do something. Reticent can also describe someone who is reserved, inclined to be silent or uncommunicative about things. // The team was reticent to spend such a large amount of money, even for an all-star free agent. // He’s always been reticent about discussing personal matters at work...</p>
             </div>
           </div>
         </div>
@@ -312,31 +321,31 @@
             <div class="card notice">
               <div class="meta">Tue, Nov 03</div>
               <h2>Election Day</h2>
-              <p style="margin-top:0.5rem; color:#e2e8f0; font-size:1.1rem;">School Holiday / District Closed</p>
+              <p style="margin-top:0.6rem; color:#e2e8f0; font-size:1.2rem; line-height:1.5;">School Holiday / District Closed</p>
             </div>
             
             <div class="card notice">
               <div class="meta">Mon, Nov 23</div>
               <h2>Thanksgiving Break</h2>
-              <p style="margin-top:0.5rem; color:#e2e8f0; font-size:1.1rem;">School Holiday / District Closed</p>
+              <p style="margin-top:0.6rem; color:#e2e8f0; font-size:1.2rem; line-height:1.5;">School Holiday / District Closed</p>
             </div>
             
             <div class="card notice">
               <div class="meta">Mon, Dec 21</div>
               <h2>Christmas/Winter Break</h2>
-              <p style="margin-top:0.5rem; color:#e2e8f0; font-size:1.1rem;">School Holiday / District Closed</p>
+              <p style="margin-top:0.6rem; color:#e2e8f0; font-size:1.2rem; line-height:1.5;">School Holiday / District Closed</p>
             </div>
             
             <div class="card notice">
               <div class="meta">Mon, Jan 18</div>
               <h2>Dr. Martin Luther King, Jr. Holiday</h2>
-              <p style="margin-top:0.5rem; color:#e2e8f0; font-size:1.1rem;">School Holiday / District Closed</p>
+              <p style="margin-top:0.6rem; color:#e2e8f0; font-size:1.2rem; line-height:1.5;">School Holiday / District Closed</p>
             </div>
             
             <div class="card notice">
               <div class="meta">Mon, Feb 08</div>
               <h2>Mardi Gras Holidays</h2>
-              <p style="margin-top:0.5rem; color:#e2e8f0; font-size:1.1rem;">School Holiday / District Closed</p>
+              <p style="margin-top:0.6rem; color:#e2e8f0; font-size:1.2rem; line-height:1.5;">School Holiday / District Closed</p>
             </div>
             
           </div>
@@ -346,7 +355,7 @@
 
   <footer>
     <div id="status-title">Active Feed Loop</div>
-    <div id="status-sync">Sync: Oct 30, 01:51 PM</div>
+    <div id="status-sync">Sync: Oct 30, 02:29 PM</div>
   </footer>
 
   <script>

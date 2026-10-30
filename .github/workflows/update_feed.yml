@@ -2,8 +2,13 @@ name: Update Calendar Feed
 
 on:
   schedule:
-    - cron: '0 * * * *' # Runs automatically every hour
-  workflow_dispatch:      # Allows manual trigger via the "Run workflow" button
+    - cron: '0 * * * *'  # Runs every hour for menus/news
+  workflow_dispatch:       # Allows manual "Run workflow" button
+  push:
+    paths:
+      - 'announcements.json'  # Triggers immediately when you post from admin.html
+      - 'template_display.html'
+      - 'build.py'
 
 permissions:
   contents: write

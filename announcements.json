@@ -18,5 +18,15 @@
     "duration": 15,
     "startDate": "2026-10-30",
     "endDate": ""
+  },
+  {
+    "type": "rss",
+    "headline": "Word of the Day",
+    "details": "",
+    "rssUrl": "https://www.merriam-webster.com/wotd/feed/rss2",
+    "theme": "theme-navy",
+    "duration": 15,
+    "startDate": "2026-10-30",
+    "endDate": ""
   }
 ]

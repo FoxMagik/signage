@@ -77,12 +77,7 @@
       font-size: 0.85rem;
     }
     textarea { height: 60px; resize: none; }
-
-    /* Calendar inputs clickable everywhere */
-    input[type="date"] {
-      cursor: pointer;
-      color-scheme: dark;
-    }
+    input[type="date"] { cursor: pointer; color-scheme: dark; }
 
     .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; }
     .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.5rem; }
@@ -109,7 +104,7 @@
       font-size: 0.8rem;
     }
     details summary { cursor: pointer; color: var(--accent); font-weight: 600; outline: none; }
-    .auth-fields { margin-top: 0.5rem; display: grid; grid-template-columns: 1fr 1fr auto; gap: 0.5rem; align-items: end; }
+    .auth-fields { margin-top: 0.5rem; display: grid; grid-template-columns: 1fr 1.5fr auto; gap: 0.5rem; align-items: end; }
 
     .item-list-container {
       flex: 1;
@@ -149,17 +144,17 @@
   </header>
 
   <details class="auth-drawer" id="authDetails">
-    <summary>🔑 Cloudflare Proxy / Access Settings</summary>
+    <summary>🔑 Proxy Settings</summary>
     <div class="auth-fields">
       <div>
-        <label>Proxy PIN / Token</label>
+        <label>Admin PIN</label>
         <input type="password" id="authKey" placeholder="Enter PIN">
       </div>
       <div>
-        <label>Cloudflare Worker URL</label>
+        <label>Worker URL</label>
         <input type="url" id="proxyUrl" placeholder="https://signage-proxy.aebstryakt.workers.dev">
       </div>
-      <button type="button" onclick="saveAuth()">Save</button>
+      <button type="button" onclick="saveAuth()">Save Settings</button>
     </div>
   </details>
 
@@ -240,24 +235,17 @@
   </div>
 
   <script>
-    const REPO = "FoxMagik/signage";
-    let fileSha = "";
     let currentAnnouncements = [];
 
-    // Trigger browser date picker on click anywhere inside the input box
-    function triggerDatePicker(inputElem) {
+    function triggerDatePicker(el) {
       if ('showPicker' in HTMLInputElement.prototype) {
-        try {
-          inputElem.showPicker();
-        } catch (e) {
-          // Fallback if browser restricts showPicker
-        }
+        try { el.showPicker(); } catch (e) {}
       }
     }
 
     function saveAuth() {
       localStorage.setItem("signage_auth", document.getElementById("authKey").value.trim());
-      localStorage.setItem("signage_proxy", document.getElementById("proxyUrl").value.trim());
+      localStorage.setItem("signage_proxy", document.getElementById("proxyUrl").value.trim().replace(/\/$/, ""));
       document.getElementById("authDetails").removeAttribute("open");
       loadFeed();
     }
@@ -289,17 +277,35 @@
     }
 
     async function loadFeed() {
+      const pin = localStorage.getItem("signage_auth");
+      const proxy = localStorage.getItem("signage_proxy");
       const status = document.getElementById("headerStatus");
+      const container = document.getElementById("slideList");
+
+      if (!proxy || !pin) {
+        container.innerHTML = "<div style='color:var(--muted); font-size:0.85rem;'>Configure Admin PIN and Worker URL in the 🔑 menu above.</div>";
+        document.getElementById("authDetails").setAttribute("open", "true");
+        return;
+      }
+
       try {
-        const res = await fetch(`https://api.github.com/repos/${REPO}/contents/announcements.json?t=${Date.now()}`);
-        if (!res.ok) throw new Error("Could not fetch announcements.json");
-        const data = await res.json();
-        fileSha = data.sha;
-        currentAnnouncements = JSON.parse(atob(data.content));
+        status.textContent = "Syncing...";
+        const res = await fetch(proxy, {
+          method: "GET",
+          headers: { "X-Admin-Pin": pin }
+        });
+
+        if (!res.ok) {
+          const err = await res.text();
+          throw new Error(`Worker returned ${res.status}: ${err}`);
+        }
+
+        currentAnnouncements = await res.json();
         renderList();
-        status.textContent = `Synced (${currentAnnouncements.length} custom slides)`;
+        status.textContent = `Synced (${currentAnnouncements.length} slides)`;
       } catch (err) {
-        document.getElementById("slideList").innerHTML = `<div style="color:var(--muted); font-size:0.8rem;">Sync notice: ${err.message}</div>`;
+        container.innerHTML = `<div style="color:#ef4444; font-size:0.85rem;">Sync error: ${err.message}</div>`;
+        status.textContent = "Sync failed";
       }
     }
 
@@ -341,54 +347,30 @@
       };
 
       currentAnnouncements.push(newItem);
-      await commitChanges("Add slide");
+      await commitChanges();
     });
 
     async function deleteItem(idx) {
       if (!confirm("Remove this slide?")) return;
       currentAnnouncements.splice(idx, 1);
-      await commitChanges("Remove slide");
+      await commitChanges();
     }
 
-    async function commitChanges(actionName) {
-      const auth = localStorage.getItem("signage_auth");
+    async function commitChanges() {
+      const pin = localStorage.getItem("signage_auth");
       const proxy = localStorage.getItem("signage_proxy");
       const status = document.getElementById("headerStatus");
       status.textContent = "Publishing...";
 
       try {
-        // Fetch the fresh SHA hash directly before writing to prevent 422 conflicts
-        const shaRes = await fetch(`https://api.github.com/repos/${REPO}/contents/announcements.json?t=${Date.now()}`);
-        if (!shaRes.ok) throw new Error("Could not retrieve current file state from GitHub.");
-        const shaData = await shaRes.json();
-        fileSha = shaData.sha;
-
-        const payload = {
-          message: `${actionName} via admin [skip ci]`,
-          content: btoa(unescape(encodeURIComponent(JSON.stringify(currentAnnouncements, null, 2)))),
-          sha: fileSha
-        };
-
-        let resp;
-        if (proxy) {
-          resp = await fetch(proxy, {
-            method: "POST",
-            headers: { 
-              "Content-Type": "application/json", 
-              "X-Admin-Pin": auth 
-            },
-            body: JSON.stringify(payload)
-          });
-        } else {
-          resp = await fetch(`https://api.github.com/repos/${REPO}/contents/announcements.json`, {
-            method: "PUT",
-            headers: { 
-              "Authorization": `token ${auth}`, 
-              "Content-Type": "application/json" 
-            },
-            body: JSON.stringify(payload)
-          });
-        }
+        const resp = await fetch(proxy, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-Admin-Pin": pin
+          },
+          body: JSON.stringify({ announcements: currentAnnouncements })
+        });
 
         if (resp.ok) {
           status.textContent = "Saved to GitHub!";
@@ -406,14 +388,14 @@
           status.textContent = "Error saving";
         }
       } catch (err) {
-        alert("Commit error: " + err.message);
-        status.textContent = "Error";
+        alert("Network error: " + err.message);
+        status.textContent = "Network error";
       }
     }
 
-    // Init credentials
+    // Default setup
     document.getElementById("authKey").value = localStorage.getItem("signage_auth") || "";
-    document.getElementById("proxyUrl").value = localStorage.getItem("signage_proxy") || "";
+    document.getElementById("proxyUrl").value = localStorage.getItem("signage_proxy") || "https://signage-proxy.aebstryakt.workers.dev";
     toggleFormFields();
     loadFeed();
   </script>

@@ -161,6 +161,11 @@
       <input type="url" id="rssUrl" placeholder="https://example.com/feed.xml">
     </div>
 
+    <div class="form-group" id="groupImage">
+      <label>Image URL (Optional)</label>
+      <input type="url" id="imageUrl" placeholder="https://example.com/photo.jpg">
+    </div>
+
     <div class="row">
       <div class="form-group">
         <label>Theme</label>
@@ -390,6 +395,7 @@
       type: document.getElementById("entryType").value,
       headline: document.getElementById("headline").value.trim(),
       details: document.getElementById("details").value.trim(),
+      imageUrl: document.getElementById("imageUrl").value.trim(),
       rssUrl: document.getElementById("rssUrl").value.trim(),
       theme: document.getElementById("theme").value,
       duration: parseInt(document.getElementById("duration").value, 10),

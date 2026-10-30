@@ -142,35 +142,69 @@ def parse_generic_rss_slide(title, rss_url, duration, theme):
         channel = root.find("channel")
         items = channel.findall("item") if channel is not None else root.findall(".//item")
 
-        cards = []
-        for item in items[:4]:
-            i_title = item.find("title").text if item.find("title") is not None else "Update"
-            i_desc = item.find("description").text if item.find("description") is not None else ""
-            clean_desc = re.sub(r'<[^>]+>', '', i_desc).strip()
-            if len(clean_desc) > 140:
-                clean_desc = clean_desc[:140] + "..."
-
-            cards.append(f"""
-            <div class="card">
-              <h2>{i_title}</h2>
-              <p style="margin-top:0.4rem; color:#cbd5e1; font-size:1rem;">{clean_desc}</p>
-            </div>
-            """)
-
-        if not cards:
+        if not items:
             return ""
 
+        # Take strictly the single latest entry for hero presentation
+        latest = items[0]
+        i_title = latest.find("title").text if latest.find("title") is not None else title
+        i_desc = latest.find("description").text if latest.find("description") is not None else ""
+        
+        # 1. Search for an image tag (enclosure, media:content, or raw HTML img)
+        img_url = ""
+        enclosure = latest.find("enclosure")
+        if enclosure is not None and "image" in enclosure.attrib.get("type", ""):
+            img_url = enclosure.attrib.get("url", "")
+            
+        if not img_url:
+            # Check for media:content
+            for elem in latest:
+                if elem.tag.endswith("content") and "image" in elem.attrib.get("type", ""):
+                    img_url = elem.attrib.get("url", "")
+                    break
+
+        if not img_url:
+            # Search for inline <img src="..."> in description
+            match = re.search(r'<img[^>]+src=["\']([^"\']+)["\']', i_desc)
+            if match:
+                img_url = match.group(1)
+
+        # 2. Clean HTML from the description text
+        clean_desc = re.sub(r'<[^>]+>', '', i_desc).strip()
+        if len(clean_desc) > 380:
+            clean_desc = clean_desc[:380] + "..."
+
+        # 3. Render Hero with Image (NASA style)
+        if img_url:
+            return f"""
+            <div class="slide {theme}" data-title="{title}" data-duration="{duration}">
+              <div class="hero-layout" style="display: flex; gap: 3rem; align-items: center; padding: 3rem;">
+                <img src="{img_url}" alt="{i_title}" style="max-width: 48%; max-height: 70vh; border-radius: 12px; object-fit: cover; box-shadow: 0 8px 24px rgba(0,0,0,0.5);">
+                <div class="hero-content" style="flex: 1;">
+                  <span class="hero-tag">{title}</span>
+                  <h2 style="font-size: 2.5rem; line-height: 1.2; margin-bottom: 1rem;">{i_title}</h2>
+                  <p style="font-size: 1.3rem; line-height: 1.6; color: #cbd5e1;">{clean_desc}</p>
+                </div>
+              </div>
+            </div>
+            """
+
+        # 4. Render Hero Text Only (Word of the Day style)
         return f"""
         <div class="slide {theme}" data-title="{title}" data-duration="{duration}">
-          <div class="grid-container">
-            {"".join(cards)}
+          <div class="hero-layout" style="padding: 4rem;">
+            <div class="hero-content" style="max-width: 900px;">
+              <span class="hero-tag">{title}</span>
+              <h2 style="font-size: 3.5rem; line-height: 1.2; margin-bottom: 1.2rem; color: var(--accent);">{i_title}</h2>
+              <p style="font-size: 1.6rem; line-height: 1.6; color: #e2e8f0;">{clean_desc}</p>
+            </div>
           </div>
         </div>
         """
+
     except Exception as e:
         print(f"Warning: Failed custom RSS ({rss_url}): {e}")
         return ""
-
 # ----------------- 4. CUSTOM ANNOUNCEMENTS -----------------
 
 def load_user_announcements_and_feeds():

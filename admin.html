@@ -2,452 +2,316 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Signage Control Panel</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ascension Signage Admin</title>
   <style>
     :root {
       --bg: #0f172a;
-      --card: #1e293b;
+      --card-bg: #1e293b;
       --accent: #38bdf8;
       --text: #f8fafc;
       --muted: #94a3b8;
       --border: #334155;
-      --danger: #ef4444;
-      --success: #22c55e;
-      --gold: #f59e0b;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       background: var(--bg);
       color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       padding: 2.5rem;
-    }
-    .layout-container {
-      display: grid;
-      grid-template-columns: 460px 1fr;
-      gap: 2rem;
-      max-width: 1400px;
+      max-width: 950px;
       margin: 0 auto;
     }
+    h1 { color: var(--accent); margin-bottom: 0.5rem; }
+    p.sub { color: var(--muted); margin-bottom: 2rem; }
     .panel {
-      background: var(--card);
+      background: var(--card-bg);
       border: 1px solid var(--border);
       border-radius: 12px;
       padding: 2rem;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.3);
-      display: flex;
-      flex-direction: column;
+      margin-bottom: 2rem;
     }
-    h2 { margin-bottom: 1.5rem; color: var(--accent); font-size: 1.4rem; }
-    .form-group { margin-bottom: 1.2rem; display: flex; flex-direction: column; gap: 0.4rem; }
-    label { font-weight: 600; font-size: 0.9rem; }
+    .form-group { margin-bottom: 1.25rem; }
+    label { display: block; font-weight: 600; margin-bottom: 0.4rem; color: #cbd5e1; }
     input, select, textarea {
+      width: 100%;
+      padding: 0.75rem;
       background: #0b0f19;
       border: 1px solid var(--border);
       border-radius: 6px;
-      padding: 0.75rem;
       color: #fff;
-      font-size: 0.95rem;
+      font-size: 1rem;
     }
-    input:focus, select:focus, textarea:focus { border-color: var(--accent); outline: none; }
-    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
-    button.primary-btn {
+    textarea { height: 100px; resize: vertical; }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; }
+    button {
       background: var(--accent);
       color: #0b0f19;
       border: none;
-      border-radius: 6px;
-      padding: 0.85rem;
+      padding: 0.85rem 1.75rem;
       font-size: 1rem;
       font-weight: 700;
+      border-radius: 6px;
       cursor: pointer;
-      margin-top: 0.5rem;
       transition: opacity 0.2s;
     }
-    button.primary-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-    #status { margin-top: 1rem; font-weight: 600; font-size: 0.9rem; text-align: center; }
-
-    /* Active Announcements Table */
-    .table-wrapper { overflow-x: auto; }
-    table { width: 100%; border-collapse: collapse; text-align: left; }
-    th {
-      border-bottom: 2px solid var(--border);
-      padding: 0.75rem 1rem;
-      color: var(--muted);
-      font-size: 0.85rem;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-    }
-    td {
-      border-bottom: 1px solid var(--border);
-      padding: 1rem;
-      font-size: 0.95rem;
-      vertical-align: middle;
-    }
-    .badge {
-      display: inline-block;
-      font-size: 0.75rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      padding: 0.2rem 0.5rem;
-      border-radius: 4px;
-    }
-    .badge-navy { background: rgba(56, 189, 248, 0.2); color: var(--accent); }
-    .badge-gold { background: rgba(245, 158, 11, 0.2); color: var(--gold); }
-    .badge-teal { background: rgba(45, 212, 191, 0.2); color: #2dd4bf; }
-    
-    .status-active { color: var(--success); font-weight: 600; font-size: 0.85rem; }
-    .status-expired { color: var(--danger); font-weight: 600; font-size: 0.85rem; }
-    .status-pending { color: var(--muted); font-weight: 600; font-size: 0.85rem; }
-
-    .delete-btn {
-      background: transparent;
-      color: var(--danger);
-      border: 1px solid var(--danger);
-      border-radius: 4px;
-      padding: 0.4rem 0.75rem;
-      font-size: 0.85rem;
-      cursor: pointer;
-      font-weight: 600;
-      transition: all 0.2s;
-    }
-    .delete-btn:hover { background: var(--danger); color: #fff; }
-    .delete-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-
-    .header-actions {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-    }
-    .text-btn {
-      background: transparent;
+    button:hover { opacity: 0.9; }
+    .item-list { list-style: none; margin-top: 1rem; }
+    .item-card {
+      background: #0b0f19;
       border: 1px solid var(--border);
-      color: var(--muted);
+      padding: 1rem 1.5rem;
+      border-radius: 8px;
+      margin-bottom: 0.75rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .btn-delete {
+      background: #ef4444;
+      color: #fff;
       padding: 0.4rem 0.8rem;
-      border-radius: 4px;
-      cursor: pointer;
       font-size: 0.85rem;
     }
-    .text-btn:hover { color: #fff; border-color: var(--muted); }
   </style>
 </head>
 <body>
 
-<div class="layout-container">
+  <h1>Signage Control Panel</h1>
+  <p class="sub">Publish custom slides, flyers, schedules, and background graphics.</p>
 
-  <!-- LEFT COLUMN: Post New Entry -->
+  <!-- Auth Panel -->
   <div class="panel">
-    <h2>Post New Signage Entry</h2>
-    
-    <div class="form-group">
-      <label>Entry Type</label>
-      <select id="entryType" onchange="toggleType()">
-        <option value="announcement">Announcement / Birthday</option>
-        <option value="rss">Custom RSS Feed</option>
-      </select>
-    </div>
-
-    <div class="form-group" id="groupHeadline">
-      <label id="headlineLabel">Headline</label>
-      <input type="text" id="headline" placeholder="e.g. Happy Birthday Mrs. Robinson!">
-    </div>
-
-    <div class="form-group" id="groupDetails">
-      <label>Details / Message</label>
-      <textarea id="details" rows="3" placeholder="e.g. From the 3rd Grade Team"></textarea>
-    </div>
-
-    <div class="form-group" id="groupRss" style="display:none;">
-      <label>RSS Feed URL</label>
-      <input type="url" id="rssUrl" placeholder="https://example.com/feed.xml">
-    </div>
-
-    <div class="form-group" id="groupImage">
-      <label>Image URL (Optional)</label>
-      <input type="url" id="imageUrl" placeholder="https://example.com/photo.jpg">
-    </div>
-
-    <div class="row">
+    <h3>Access Settings</h3>
+    <p style="color:var(--muted); font-size:0.9rem; margin-bottom:1rem;">Stored securely in this browser session.</p>
+    <div class="grid-2">
       <div class="form-group">
-        <label>Theme</label>
-        <select id="theme">
-          <option value="theme-navy">District Slate / Navy</option>
-          <option value="theme-gold">Gold Announcement</option>
-          <option value="theme-teal">Teal Highlight</option>
-        </select>
+        <label>Personal Access Token (or Proxy PIN)</label>
+        <input type="password" id="authKey" placeholder="Paste GitHub PAT or District PIN">
       </div>
       <div class="form-group">
-        <label>Duration (Seconds)</label>
-        <input type="number" id="duration" value="15" min="5" max="60">
+        <label>Optional Proxy URL (leave blank if using PAT)</label>
+        <input type="url" id="proxyUrl" placeholder="https://worker.your-domain.workers.dev">
       </div>
     </div>
-
-    <div class="row">
-      <div class="form-group">
-        <label>Start Date</label>
-        <input type="date" id="startDate">
-      </div>
-      <div class="form-group">
-        <label>End Date (Expiration)</label>
-        <input type="date" id="endDate">
-      </div>
-    </div>
-
-    <button id="submitBtn" class="primary-btn" onclick="submitEntry()">Publish to Display</button>
-    <div id="status"></div>
+    <button type="button" onclick="saveAuth()" style="padding:0.5rem 1rem; font-size:0.9rem;">Save Credentials</button>
   </div>
 
-  <!-- RIGHT COLUMN: Active Announcements List -->
+  <!-- Create Slide Panel -->
   <div class="panel">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-      <h2 style="margin-bottom: 0;">Currently Scheduled Items</h2>
-      <div class="header-actions">
-        <button class="text-btn" onclick="clearSavedToken()">Reset Token</button>
-        <button class="text-btn" onclick="loadCurrentAnnouncements()">Refresh List</button>
+    <h3>Create New Slide</h3>
+    <form id="slideForm">
+      
+      <div class="grid-2">
+        <div class="form-group">
+          <label>Slide Format</label>
+          <select id="slideType" onchange="toggleFormFields()">
+            <option value="announcement">Standard Announcement (Text + Optional Side Photo)</option>
+            <option value="full-image">Full Image / Poster (Graphic fills screen)</option>
+            <option value="bg-banner">Banner (Text over Custom Background Image)</option>
+            <option value="rss">Live RSS News Feed</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Display Duration (Seconds)</label>
+          <input type="number" id="duration" value="15" min="5" max="120">
+        </div>
       </div>
-    </div>
 
-    <div class="table-wrapper">
-      <table>
-        <thead>
-          <tr>
-            <th>Type / Theme</th>
-            <th>Headline & Details</th>
-            <th>Dates</th>
-            <th>Status</th>
-            <th>Action</th>
-          </tr>
-        </thead>
-        <tbody id="entriesTableBody">
-          <tr><td colspan="5" style="text-align:center; color:var(--muted);">Checking authorization...</td></tr>
-        </tbody>
-      </table>
-    </div>
+      <div class="form-group" id="groupHeadline">
+        <label id="labelHeadline">Headline / Slide Title</label>
+        <input type="text" id="headline" placeholder="e.g. Teacher Appreciation Week">
+      </div>
+
+      <div class="form-group" id="groupDetails">
+        <label>Details / Body Text</label>
+        <textarea id="details" placeholder="Enter announcement body text..."></textarea>
+      </div>
+
+      <div class="form-group" id="groupImage">
+        <label id="labelImage">Image URL</label>
+        <input type="url" id="imageUrl" placeholder="https://example.com/photo-or-flyer.jpg">
+      </div>
+
+      <div class="form-group" id="groupRss" style="display:none;">
+        <label>RSS Feed URL</label>
+        <input type="url" id="rssUrl" placeholder="https://example.com/feed.xml">
+      </div>
+
+      <div class="grid-3">
+        <div class="form-group" id="groupTheme">
+          <label>Color Theme</label>
+          <select id="theme">
+            <option value="theme-navy">District Navy</option>
+            <option value="theme-gold">Celebration Gold</option>
+            <option value="theme-teal">Teal Highlight</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Start Date</label>
+          <input type="date" id="startDate">
+        </div>
+        <div class="form-group">
+          <label>End Date</label>
+          <input type="date" id="endDate">
+        </div>
+      </div>
+
+      <button type="submit" id="btnSubmit">Publish Slide</button>
+    </form>
   </div>
 
-</div>
+  <!-- Active List Panel -->
+  <div class="panel">
+    <h3>Currently Scheduled Slides</h3>
+    <ul class="item-list" id="slideList">Loading scheduled items...</ul>
+  </div>
 
-<script>
-  // =========================================================================
-  // CONFIGURATION: Set only your repository path here (e.g., "username/repo")
-  // =========================================================================
-  const GITHUB_REPO = "FoxMagik/signage"; 
-  const FILE_PATH = "announcements.json";
+  <script>
+    const REPO = "FoxMagik/signage";
+    let fileSha = "";
+    let currentAnnouncements = [];
 
-  let currentFileSha = null;
-  let cachedData = [];
+    function saveAuth() {
+      localStorage.setItem("signage_auth", document.getElementById("authKey").value.trim());
+      localStorage.setItem("signage_proxy", document.getElementById("proxyUrl").value.trim());
+      alert("Settings saved!");
+      loadFeed();
+    }
 
-  // Pre-fill start date with today
-  document.getElementById("startDate").valueAsDate = new Date();
+    function toggleFormFields() {
+      const type = document.getElementById("slideType").value;
+      const grpDetails = document.getElementById("groupDetails");
+      const grpImage = document.getElementById("groupImage");
+      const grpRss = document.getElementById("groupRss");
+      const grpTheme = document.getElementById("groupTheme");
+      const lblImage = document.getElementById("labelImage");
+      const lblHeadline = document.getElementById("labelHeadline");
 
-  function toggleType() {
-    const type = document.getElementById("entryType").value;
-    document.getElementById("groupRss").style.display = type === "rss" ? "flex" : "none";
-    document.getElementById("headlineLabel").textContent = type === "rss" ? "Feed Title" : "Headline";
-  }
+      grpDetails.style.display = (type === "full-image" || type === "rss") ? "none" : "block";
+      grpRss.style.display = (type === "rss") ? "block" : "none";
+      grpImage.style.display = (type === "rss") ? "none" : "block";
+      grpTheme.style.display = (type === "full-image") ? "none" : "block";
 
-  // Token management via LocalStorage
-  function getAuthToken() {
-    let token = localStorage.getItem("signage_gh_token");
-    if (!token) {
-      token = prompt("Please enter your GitHub Access Token (saved locally in this browser only):");
-      if (token && token.trim()) {
-        token = token.trim();
-        localStorage.setItem("signage_gh_token", token);
+      if (type === "full-image") {
+        lblImage.textContent = "Full-Screen Poster Image URL (Required)";
+        lblHeadline.textContent = "Slide Title (For Status Bar)";
+      } else if (type === "bg-banner") {
+        lblImage.textContent = "Background Image URL (Required)";
+        lblHeadline.textContent = "Headline Text";
+      } else {
+        lblImage.textContent = "Side Image URL (Optional)";
+        lblHeadline.textContent = "Headline Text";
       }
     }
-    return token;
-  }
 
-  function clearSavedToken() {
-    localStorage.removeItem("signage_gh_token");
-    alert("Token removed from browser storage.");
-    location.reload();
-  }
-
-  // Fetch current announcements from GitHub
-  async function loadCurrentAnnouncements() {
-    const tbody = document.getElementById("entriesTableBody");
-    const token = getAuthToken();
-
-    if (!token) {
-      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:var(--danger);">No access token provided. Click "Reset Token" or reload to enter one.</td></tr>';
-      return;
+    async function loadFeed() {
+      const key = localStorage.getItem("signage_auth");
+      if (!key) {
+        document.getElementById("slideList").innerHTML = "<li>Please enter and save your token/PIN above.</li>";
+        return;
+      }
+      try {
+        const res = await fetch(`https://api.github.com/repos/${REPO}/contents/announcements.json?t=${Date.now()}`);
+        if (!res.ok) throw new Error("Could not fetch announcements.json");
+        const data = await res.json();
+        fileSha = data.sha;
+        currentAnnouncements = JSON.parse(atob(data.content));
+        renderList();
+      } catch (err) {
+        document.getElementById("slideList").innerHTML = `<li>Error loading list: ${err.message}</li>`;
+      }
     }
 
-    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:var(--muted);">Loading entries from repository...</td></tr>';
-
-    try {
-      const res = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/contents/${FILE_PATH}`, {
-        headers: { 
-          "Authorization": `Bearer ${token}`, 
-          "Accept": "application/vnd.github.v3+json" 
-        }
-      });
-
-      if (res.status === 404) {
-        cachedData = [];
-        currentFileSha = null;
-        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:var(--muted);">No announcements file exists yet. Add your first item!</td></tr>';
+    function renderList() {
+      const ul = document.getElementById("slideList");
+      ul.innerHTML = "";
+      if (!currentAnnouncements.length) {
+        ul.innerHTML = "<li>No active custom slides found.</li>";
         return;
       }
 
-      if (!res.ok) {
-        throw new Error(`GitHub API returned status ${res.status}`);
-      }
-
-      const fileData = await res.json();
-      currentFileSha = fileData.sha;
-      cachedData = JSON.parse(decodeURIComponent(escape(atob(fileData.content))));
-
-      renderTable();
-    } catch (err) {
-      console.error(err);
-      tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:var(--danger);">Error loading entries: ${err.message}. Check your token or repository path.</td></tr>`;
-    }
-  }
-
-  function renderTable() {
-    const tbody = document.getElementById("entriesTableBody");
-    tbody.innerHTML = "";
-
-    if (!cachedData.length) {
-      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:var(--muted);">No entries currently scheduled.</td></tr>';
-      return;
-    }
-
-    const todayStr = new Date().toISOString().split('T')[0];
-
-    cachedData.forEach((item, index) => {
-      const tr = document.createElement("tr");
-
-      let badgeClass = "badge-navy";
-      if (item.theme === "theme-gold") badgeClass = "badge-gold";
-      if (item.theme === "theme-teal") badgeClass = "badge-teal";
-
-      let statusHtml = '<span class="status-active">Active</span>';
-      if (item.startDate && item.startDate > todayStr) {
-        statusHtml = `<span class="status-pending">Starts ${item.startDate}</span>`;
-      } else if (item.endDate && item.endDate < todayStr) {
-        statusHtml = '<span class="status-expired">Expired</span>';
-      }
-
-      tr.innerHTML = `
-        <td>
-          <span class="badge ${badgeClass}">${item.type || 'Notice'}</span>
-          <div style="font-size:0.75rem; color:var(--muted); margin-top:0.25rem;">${item.duration || 15}s</div>
-        </td>
-        <td>
-          <strong>${item.headline || 'Untitled'}</strong>
-          <div style="font-size:0.85rem; color:var(--muted); margin-top:0.25rem;">
-            ${item.type === 'rss' ? (item.rssUrl || '') : (item.details || '')}
+      currentAnnouncements.forEach((item, idx) => {
+        const li = document.createElement("li");
+        li.className = "item-card";
+        li.innerHTML = `
+          <div>
+            <strong>${item.headline}</strong> 
+            <span style="color:var(--muted); font-size:0.85rem;">(${item.type} | ${item.duration}s | ${item.startDate || 'Now'} to ${item.endDate || 'Always'})</span>
           </div>
-        </td>
-        <td style="font-size:0.85rem; color:#cbd5e1;">
-          ${item.startDate || 'Immediate'}<br>
-          <span style="color:var(--muted);">to</span> ${item.endDate || 'No end'}
-        </td>
-        <td>${statusHtml}</td>
-        <td>
-          <button class="delete-btn" onclick="deleteEntry(${index})">Delete</button>
-        </td>
-      `;
-      tbody.appendChild(tr);
-    });
-  }
+          <button class="btn-delete" onclick="deleteItem(${idx})">Delete</button>
+        `;
+        ul.appendChild(li);
+      });
+    }
 
-  // Push updated list to GitHub API
-  async function saveToGitHub(updatedList, commitMsg) {
-    const token = getAuthToken();
-    if (!token) throw new Error("No authorization token found.");
+    document.getElementById("slideForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const type = document.getElementById("slideType").value;
+      const newItem = {
+        type: type,
+        headline: document.getElementById("headline").value.trim(),
+        details: document.getElementById("details").value.trim(),
+        imageUrl: document.getElementById("imageUrl").value.trim(),
+        rssUrl: document.getElementById("rssUrl").value.trim(),
+        theme: document.getElementById("theme").value,
+        duration: parseInt(document.getElementById("duration").value, 10) || 15,
+        startDate: document.getElementById("startDate").value,
+        endDate: document.getElementById("endDate").value
+      };
 
-    const putRes = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/contents/${FILE_PATH}`, {
-      method: "PUT",
-      headers: { 
-        "Authorization": `Bearer ${token}`, 
-        "Accept": "application/vnd.github.v3+json" 
-      },
-      body: JSON.stringify({
-        message: commitMsg,
-        content: btoa(unescape(encodeURIComponent(JSON.stringify(updatedList, null, 2)))),
-        sha: currentFileSha
-      })
+      currentAnnouncements.push(newItem);
+      await commitChanges("Add new slide via Admin");
     });
 
-    if (!putRes.ok) {
-      const errBody = await putRes.text();
-      throw new Error(`Save failed (${putRes.status}): ${errBody}`);
-    }
-    
-    const data = await putRes.json();
-    currentFileSha = data.content.sha;
-    cachedData = updatedList;
-  }
-
-  // Submit new entry
-  async function submitEntry() {
-    const btn = document.getElementById("submitBtn");
-    const status = document.getElementById("status");
-    btn.disabled = true;
-    status.style.color = "var(--muted)";
-    status.textContent = "Committing to repository...";
-
-    const newEntry = {
-      type: document.getElementById("entryType").value,
-      headline: document.getElementById("headline").value.trim(),
-      details: document.getElementById("details").value.trim(),
-      imageUrl: document.getElementById("imageUrl").value.trim(),
-      rssUrl: document.getElementById("rssUrl").value.trim(),
-      theme: document.getElementById("theme").value,
-      duration: parseInt(document.getElementById("duration").value, 10),
-      startDate: document.getElementById("startDate").value,
-      endDate: document.getElementById("endDate").value
-    };
-
-    if (!newEntry.headline) {
-      alert("Please provide a headline or title.");
-      btn.disabled = false;
-      status.textContent = "";
-      return;
+    async function deleteItem(idx) {
+      if (!confirm("Delete this slide?")) return;
+      currentAnnouncements.splice(idx, 1);
+      await commitChanges("Delete slide via Admin");
     }
 
-    try {
-      const updatedList = [...cachedData, newEntry];
-      await saveToGitHub(updatedList, `Add ${newEntry.type}: ${newEntry.headline} [via web admin]`);
-      
-      status.style.color = "var(--success)";
-      status.textContent = "Saved! Action triggered to update display.";
-      
-      document.getElementById("headline").value = "";
-      document.getElementById("details").value = "";
-      document.getElementById("rssUrl").value = "";
-      
-      renderTable();
-    } catch (err) {
-      console.error(err);
-      status.style.color = "var(--danger)";
-      status.textContent = "Failed to save. Check token or permissions.";
-    } finally {
-      btn.disabled = false;
+    async function commitChanges(msg) {
+      const auth = localStorage.getItem("signage_auth");
+      const proxy = localStorage.getItem("signage_proxy");
+      const payload = {
+        message: `${msg} [skip ci]`,
+        content: btoa(unescape(encodeURIComponent(JSON.stringify(currentAnnouncements, null, 2)))),
+        sha: fileSha
+      };
+
+      let resp;
+      if (proxy) {
+        resp = await fetch(proxy, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "X-Admin-Pin": auth },
+          body: JSON.stringify(payload)
+        });
+      } else {
+        resp = await fetch(`https://api.github.com/repos/${REPO}/contents/announcements.json`, {
+          method: "PUT",
+          headers: {
+            "Authorization": `token ${auth}`,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(payload)
+        });
+      }
+
+      if (resp.ok) {
+        alert("Published! Signage will update shortly.");
+        document.getElementById("slideForm").reset();
+        toggleFormFields();
+        loadFeed();
+      } else {
+        alert("Failed to commit. Verify credentials.");
+      }
     }
-  }
 
-  // Delete an existing entry
-  async function deleteEntry(index) {
-    const item = cachedData[index];
-    if (!confirm(`Are you sure you want to remove "${item.headline}"?`)) return;
-
-    try {
-      const updatedList = cachedData.filter((_, i) => i !== index);
-      await saveToGitHub(updatedList, `Remove announcement: ${item.headline} [via web admin]`);
-      renderTable();
-    } catch (err) {
-      console.error(err);
-      alert("Failed to delete entry. Check console or permissions.");
-    }
-  }
-
-  // Initial load
-  loadCurrentAnnouncements();
-</script>
+    // Initialize
+    document.getElementById("authKey").value = localStorage.getItem("signage_auth") || "";
+    document.getElementById("proxyUrl").value = localStorage.getItem("signage_proxy") || "";
+    loadFeed();
+  </script>
 </body>
 </html>
